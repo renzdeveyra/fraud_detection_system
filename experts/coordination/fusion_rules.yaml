@@ -1,0 +1,79 @@
+# Fusion rules for combining expert opinions
+
+# Priority rules - when one expert should override others
+priority_rules:
+  - name: "high_confidence_classifier"
+    condition: "classifier.confidence > 0.9"
+    action: "BLOCK"
+    description: "Block when classifier has high confidence"
+    
+  - name: "critical_anomaly"
+    condition: "anomaly.severity == 'CRITICAL'"
+    action: "BLOCK"
+    description: "Block when anomaly detector finds critical anomaly"
+    
+  - name: "known_fraud_pattern"
+    condition: "context.matches_recent_fraud == true"
+    action: "BLOCK"
+    description: "Block when transaction matches recent fraud pattern"
+
+# Weighted combination rules
+weighted_rules:
+  default:
+    classifier_weight: 0.7
+    anomaly_weight: 0.3
+    threshold_review: 0.5
+    threshold_block: 0.8
+  
+  # Special case for new users
+  new_user:
+    classifier_weight: 0.5
+    anomaly_weight: 0.5
+    threshold_review: 0.4
+    threshold_block: 0.7
+    
+  # Special case for high-value transactions
+  high_value:
+    classifier_weight: 0.6
+    anomaly_weight: 0.4
+    threshold_review: 0.4
+    threshold_block: 0.7
+
+# Agreement rules - when experts agree/disagree
+agreement_rules:
+  - name: "both_high_risk"
+    condition: "classifier.risk == 'HIGH' and anomaly.severity in ['HIGH', 'CRITICAL']"
+    action: "BLOCK"
+    description: "Block when both experts indicate high risk"
+    
+  - name: "both_medium_risk"
+    condition: "classifier.risk == 'MEDIUM' and anomaly.severity == 'MEDIUM'"
+    action: "REVIEW"
+    description: "Review when both experts indicate medium risk"
+    
+  - name: "both_low_risk"
+    condition: "classifier.risk == 'LOW' and anomaly.severity in ['LOW', 'NORMAL']"
+    action: "ALLOW"
+    description: "Allow when both experts indicate low risk"
+    
+  - name: "major_disagreement"
+    condition: "classifier.risk == 'HIGH' and anomaly.severity == 'NORMAL' or classifier.risk == 'LOW' and anomaly.severity == 'CRITICAL'"
+    action: "REVIEW"
+    description: "Review when experts strongly disagree"
+
+# Context-based rules
+context_rules:
+  - name: "unusual_location"
+    condition: "context.user_typical_country == false"
+    action: "REVIEW"
+    description: "Review when transaction is from unusual location"
+    
+  - name: "velocity_check"
+    condition: "context.transaction_velocity > 3"
+    action: "REVIEW"
+    description: "Review when user has high transaction velocity"
+    
+  - name: "amount_spike"
+    condition: "context.amount_ratio_to_average > 5"
+    action: "REVIEW"
+    description: "Review when transaction amount is much higher than user average"

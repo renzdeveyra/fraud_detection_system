@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fraud Classifier Report</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .header {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .metrics {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+        }
+        .metric-card {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            width: 23%;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .metric-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #007bff;
+        }
+        .chart {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .confusion-matrix {
+            display: grid;
+            grid-template-columns: auto auto auto;
+            width: 400px;
+            margin: 20px auto;
+            text-align: center;
+        }
+        .matrix-cell {
+            padding: 15px;
+            border: 1px solid #ddd;
+        }
+        .matrix-header {
+            background-color: #f8f9fa;
+            font-weight: bold;
+        }
+        .true-positive {
+            background-color: #d4edda;
+        }
+        .false-positive {
+            background-color: #f8d7da;
+        }
+        .false-negative {
+            background-color: #f8d7da;
+        }
+        .true-negative {
+            background-color: #d4edda;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+        }
+        th {
+            background-color: #f8f9fa;
+        }
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Fraud Classifier Report</h1>
+            <p>Generated on: <span id="report-date">{{REPORT_DATE}}</span></p>
+        </div>
+        
+        <div class="metrics">
+            <div class="metric-card">
+                <h3>Precision</h3>
+                <div class="metric-value">{{PRECISION}}</div>
+            </div>
+            <div class="metric-card">
+                <h3>Recall</h3>
+                <div class="metric-value">{{RECALL}}</div>
+            </div>
+            <div class="metric-card">
+                <h3>F1 Score</h3>
+                <div class="metric-value">{{F1_SCORE}}</div>
+            </div>
+            <div class="metric-card">
+                <h3>Accuracy</h3>
+                <div class="metric-value">{{ACCURACY}}</div>
+            </div>
+        </div>
+        
+        <div class="chart">
+            <h2>Confusion Matrix</h2>
+            <div class="confusion-matrix">
+                <div class="matrix-cell matrix-header"></div>
+                <div class="matrix-cell matrix-header">Predicted Negative</div>
+                <div class="matrix-cell matrix-header">Predicted Positive</div>
+                <div class="matrix-cell matrix-header">Actual Negative</div>
+                <div class="matrix-cell true-negative">TN: {{TN}}</div>
+                <div class="matrix-cell false-positive">FP: {{FP}}</div>
+                <div class="matrix-cell matrix-header">Actual Positive</div>
+                <div class="matrix-cell false-negative">FN: {{FN}}</div>
+                <div class="matrix-cell true-positive">TP: {{TP}}</div>
+            </div>
+        </div>
+        
+        <div class="chart">
+            <h2>ROC Curve</h2>
+            <div id="roc-curve-chart">
+                <!-- Chart will be inserted here -->
+                {{ROC_CURVE_CHART}}
+            </div>
+        </div>
+        
+        <div class="chart">
+            <h2>Feature Importance</h2>
+            <div id="feature-importance-chart">
+                <!-- Chart will be inserted here -->
+                {{FEATURE_IMPORTANCE_CHART}}
+            </div>
+        </div>
+        
+        <h2>Top Misclassifications</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Transaction ID</th>
+                    <th>Predicted</th>
+                    <th>Actual</th>
+                    <th>Confidence</th>
+                    <th>Key Features</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Table rows will be inserted here -->
+                {{MISCLASSIFICATION_TABLE_ROWS}}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

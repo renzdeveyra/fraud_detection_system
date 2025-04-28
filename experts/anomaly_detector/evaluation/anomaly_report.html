@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anomaly Detection Report</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .header {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .metrics {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+        }
+        .metric-card {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            width: 23%;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .metric-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #007bff;
+        }
+        .chart {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+        }
+        th {
+            background-color: #f8f9fa;
+        }
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+        .critical {
+            background-color: #ffcccc;
+        }
+        .high {
+            background-color: #ffe0cc;
+        }
+        .medium {
+            background-color: #ffffcc;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Anomaly Detection Report</h1>
+            <p>Generated on: <span id="report-date">{{REPORT_DATE}}</span></p>
+        </div>
+        
+        <div class="metrics">
+            <div class="metric-card">
+                <h3>Precision</h3>
+                <div class="metric-value">{{PRECISION}}</div>
+            </div>
+            <div class="metric-card">
+                <h3>Recall</h3>
+                <div class="metric-value">{{RECALL}}</div>
+            </div>
+            <div class="metric-card">
+                <h3>F1 Score</h3>
+                <div class="metric-value">{{F1_SCORE}}</div>
+            </div>
+            <div class="metric-card">
+                <h3>Anomalies Found</h3>
+                <div class="metric-value">{{ANOMALY_COUNT}}</div>
+            </div>
+        </div>
+        
+        <div class="chart">
+            <h2>Score Distribution</h2>
+            <div id="score-distribution-chart">
+                <!-- Chart will be inserted here -->
+                {{SCORE_DISTRIBUTION_CHART}}
+            </div>
+        </div>
+        
+        <div class="chart">
+            <h2>Feature Importance</h2>
+            <div id="feature-importance-chart">
+                <!-- Chart will be inserted here -->
+                {{FEATURE_IMPORTANCE_CHART}}
+            </div>
+        </div>
+        
+        <h2>Top Anomalies</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Transaction ID</th>
+                    <th>Score</th>
+                    <th>Severity</th>
+                    <th>Key Factors</th>
+                    <th>True Label</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Table rows will be inserted here -->
+                {{ANOMALY_TABLE_ROWS}}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

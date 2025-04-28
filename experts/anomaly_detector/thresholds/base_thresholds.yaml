@@ -1,0 +1,13 @@
+# Base thresholds for anomaly detection
+thresholds:
+  critical: -0.7  # Scores below this are critical anomalies
+  high: -0.4      # Scores below this are high-risk anomalies
+  medium: -0.2    # Scores below this are medium-risk anomalies
+  low: 0.0        # Scores below this are low-risk anomalies
+  
+# Adjustment parameters
+adjustment:
+  rate: 0.1       # Rate at which thresholds adapt
+  window: 1000    # Number of transactions to consider for adjustments
+  min_critical: -0.9  # Minimum value for critical threshold
+  max_critical: -0.5  # Maximum value for critical threshold
