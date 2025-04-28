@@ -1,0 +1,15 @@
+data:
+  path: "./data/creditcard.csv"
+  test_size: 0.2
+  random_state: 42
+
+models:
+  supervised:
+    class_weight: "balanced"
+    max_iter: 1000
+  anomaly:
+    contamination: 0.0017
+    n_estimators: 100
+
+threshold:
+  anomaly_percentile: 1

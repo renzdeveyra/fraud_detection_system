@@ -1,0 +1,23 @@
+# File paths configuration
+
+data:
+  raw: "data/raw/creditcard.csv"
+  processed: "data/processed/transactions_processed.parquet"
+
+models:
+  classifier:
+    path: "experts/fraud_classifier/models/classifier_model.pkl"
+    rules: "experts/fraud_classifier/rules/static_rules.json"
+    dynamic: "experts/fraud_classifier/rules/dynamic_rules.db"
+  
+  anomaly:
+    path: "experts/anomaly_detector/models/isolation_forest.pkl"
+    thresholds: "experts/anomaly_detector/thresholds/base_thresholds.yaml"
+
+shared:
+  fraud_history: "experts/coordination/shared_context/recent_frauds.json"
+  user_profiles: "experts/coordination/shared_context/user_profiles.db"
+  
+logs:
+  dir: "logs/"
+  main: "logs/fraud_detection.log"
