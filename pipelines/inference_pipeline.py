@@ -18,7 +18,7 @@ from infrastructure.utils import (
     save_results
 )
 from infrastructure.memory import ContextBuffer, KnowledgeGraph
-from experts.fraud_classifier.predict import FraudClassifier
+from experts.fraud_classifier.predict import FraudClassifierExpert
 from experts.anomaly_detector.detect import AnomalyDetectorExpert
 from experts.coordination.mediator import ExpertMediator
 
@@ -36,7 +36,7 @@ def load_experts():
         knowledge_graph = KnowledgeGraph()
         
         # Initialize experts
-        classifier = FraudClassifier(classifier_model, context)
+        classifier = FraudClassifierExpert(classifier_model, context)
         detector = AnomalyDetectorExpert(anomaly_model, context)
         
         # Initialize mediator
