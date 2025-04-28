@@ -30,21 +30,25 @@ def load_experts():
         # Load models
         classifier_model = load_model('classifier')
         anomaly_model = load_model('anomaly')
-        
+
         # Initialize context
         context = ContextBuffer()
         knowledge_graph = KnowledgeGraph()
-        
+
+        # Get paths
+        paths = load_paths()
+        rules_path = os.path.join(get_project_root(), paths['models']['classifier']['rules'])
+
         # Initialize experts
-        classifier = FraudClassifierExpert(classifier_model, context)
+        classifier = FraudClassifierExpert(classifier_model, rules_path)
         detector = AnomalyDetectorExpert(anomaly_model, context)
-        
+
         # Initialize mediator
         mediator = ExpertMediator(classifier, detector)
-        
+
         logger.info("Expert systems loaded successfully")
         return mediator
-        
+
     except Exception as e:
         logger.error(f"Error loading expert systems: {str(e)}")
         raise
@@ -54,12 +58,12 @@ def load_experts():
 def process_single_transaction(mediator, transaction):
     """Process a single transaction through the fraud detection system"""
     result = mediator.process_transaction(transaction)
-    
+
     # Log the result
     decision = result.get('decision', 'UNKNOWN')
     transaction_id = transaction.get('id', 'unknown')
     logger.info(f"Transaction {transaction_id} processed with decision: {decision}")
-    
+
     return result
 
 
@@ -67,16 +71,16 @@ def process_single_transaction(mediator, transaction):
 def process_batch(mediator, transactions):
     """Process a batch of transactions"""
     results = []
-    
+
     for idx, transaction in enumerate(transactions):
         try:
             # Add transaction index as ID if not present
             if 'id' not in transaction:
                 transaction['id'] = f"TX_{idx}"
-                
+
             result = process_single_transaction(mediator, transaction)
             results.append(result)
-            
+
         except Exception as e:
             logger.error(f"Error processing transaction {idx}: {str(e)}")
             # Add failed transaction to results
@@ -85,7 +89,7 @@ def process_batch(mediator, transactions):
                 'error': str(e),
                 'decision': 'ERROR'
             })
-    
+
     return results
 
 
@@ -96,19 +100,19 @@ def process_from_file(mediator, input_file, output_file=None):
         # Load transactions
         transactions_df = load_transaction_batch(input_file)
         transactions = transactions_df.to_dict('records')
-        
+
         logger.info(f"Loaded {len(transactions)} transactions from {input_file}")
-        
+
         # Process transactions
         results = process_batch(mediator, transactions)
-        
+
         # Save results if output file specified
         if output_file:
             save_results(results, output_file)
             logger.info(f"Results saved to {output_file}")
-        
+
         return results
-        
+
     except Exception as e:
         logger.error(f"Error processing file {input_file}: {str(e)}")
         raise
@@ -121,23 +125,23 @@ def process_from_stream(mediator, stream_source):
         # This is a placeholder for stream processing
         # In a real system, this would connect to Kafka, RabbitMQ, etc.
         logger.info(f"Stream processing from {stream_source} not implemented yet")
-        
+
         # Placeholder implementation using polling
         while True:
             # Check for new transactions
             try:
                 # Simulate batch arrival every 5 seconds
                 time.sleep(5)
-                
+
                 # Process batch
                 # In a real system, this would pull from the stream
                 # For now, we'll just break after one iteration
                 break
-                
+
             except KeyboardInterrupt:
                 logger.info("Stream processing interrupted")
                 break
-            
+
     except Exception as e:
         logger.error(f"Error in stream processing: {str(e)}")
         raise
@@ -150,16 +154,16 @@ def main():
     parser.add_argument('--output', type=str, help='Output file for results')
     parser.add_argument('--stream', type=str, help='Stream source for real-time processing')
     parser.add_argument('--transaction', type=str, help='Single JSON transaction to process')
-    
+
     args = parser.parse_args()
-    
+
     # Load expert systems
     try:
         mediator = load_experts()
     except Exception as e:
         logger.error(f"Failed to initialize expert systems: {str(e)}")
         sys.exit(1)
-    
+
     # Process based on input method
     try:
         if args.transaction:
@@ -167,26 +171,26 @@ def main():
             transaction = json.loads(args.transaction)
             result = process_single_transaction(mediator, transaction)
             print(json.dumps(result, indent=2))
-            
+
         elif args.input:
             # Process from input file
             results = process_from_file(mediator, args.input, args.output)
             if not args.output:
                 print(json.dumps(results, indent=2))
-                
+
         elif args.stream:
             # Process from stream source
             process_from_stream(mediator, args.stream)
-            
+
         else:
             logger.error("No input method specified")
             parser.print_help()
             sys.exit(1)
-            
+
     except Exception as e:
         logger.error(f"Error in inference pipeline: {str(e)}")
         sys.exit(1)
-        
+
     logger.info("Inference pipeline completed successfully")
 
 

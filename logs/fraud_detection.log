@@ -198,3 +198,313 @@ ValueError: Unsupported model type: LogisticRegression
 2025-04-28 23:22:44 - fraudDetection - DEBUG - logger.py:20 - Executed train_anomaly_detector in 7.4590 seconds
 2025-04-28 23:22:44 - fraudDetection - INFO - main.py:105 - Anomaly detector training completed
 2025-04-28 23:22:44 - fraudDetection - INFO - main.py:111 - Training pipeline completed successfully
+2025-04-29 00:46:47 - fraudDetection - INFO - dynamic_adjustments.py:34 - Initialized threshold adjuster with base thresholds: {'critical': -0.7, 'high': -0.4, 'medium': -0.2, 'low': 0.0}
+2025-04-29 00:47:14 - fraudDetection - ERROR - main.py:388 - No profiles command specified
+2025-04-29 00:52:41 - fraudDetection - INFO - context_manager.py:148 - Listed 0 user profiles
+2025-04-29 00:53:03 - fraudDetection - INFO - dynamic_adjustments.py:34 - Initialized threshold adjuster with base thresholds: {'critical': -0.7, 'high': -0.4, 'medium': -0.2, 'low': 0.0}
+2025-04-29 00:53:13 - fraudDetection - INFO - rule_manager.py:32 - Loaded static rules from C:\Users\JV\fraud_detection_system\experts/fraud_classifier/rules/static_rules.json
+2025-04-29 00:53:13 - fraudDetection - INFO - rule_manager.py:111 - Loaded 0 dynamic rules from database
+2025-04-29 00:53:44 - fraudDetection - INFO - main.py:294 - Initializing fraud detection system
+2025-04-29 00:54:42 - fraudDetection - INFO - main.py:294 - Initializing fraud detection system
+2025-04-29 00:54:42 - fraudDetection - INFO - main.py:385 - Created user profiles database at C:\Users\JV\fraud_detection_system\experts/coordination/shared_context/user_profiles.db
+2025-04-29 00:54:42 - fraudDetection - INFO - main.py:468 - Created dynamic rules database at C:\Users\JV\fraud_detection_system\experts/fraud_classifier/rules/dynamic_rules.db
+2025-04-29 00:54:42 - fraudDetection - INFO - main.py:490 - System initialization completed
+2025-04-29 00:55:26 - fraudDetection - INFO - context_manager.py:148 - Listed 0 user profiles
+2025-04-29 00:55:39 - fraudDetection - INFO - rule_manager.py:32 - Loaded static rules from C:\Users\JV\fraud_detection_system\experts/fraud_classifier/rules/static_rules.json
+2025-04-29 00:55:39 - fraudDetection - INFO - rule_manager.py:111 - Loaded 0 dynamic rules from database
+2025-04-29 00:59:04 - fraudDetection - INFO - main.py:198 - Starting training pipeline
+2025-04-29 00:59:04 - fraudDetection - INFO - main.py:217 - Training pipeline completed successfully
+2025-04-29 00:59:18 - fraudDetection - INFO - main.py:198 - Starting training pipeline
+2025-04-29 00:59:18 - fraudDetection - DEBUG - logger.py:15 - Starting execution of update_rules
+2025-04-29 00:59:18 - fraudDetection - INFO - training_pipeline.py:121 - Updating static rules
+2025-04-29 00:59:18 - fraudDetection - DEBUG - model_ops.py:89 - Loaded static rules from C:\Users\JV\fraud_detection_system\experts/fraud_classifier/rules/static_rules.json
+2025-04-29 00:59:18 - fraudDetection - DEBUG - model_ops.py:89 - Loaded thresholds rules from C:\Users\JV\fraud_detection_system\experts/anomaly_detector/thresholds/base_thresholds.yaml
+2025-04-29 00:59:18 - fraudDetection - INFO - model_ops.py:113 - Saved static rules to C:\Users\JV\fraud_detection_system\experts/fraud_classifier/rules/static_rules.json
+2025-04-29 00:59:18 - fraudDetection - INFO - model_ops.py:113 - Saved thresholds rules to C:\Users\JV\fraud_detection_system\experts/anomaly_detector/thresholds/base_thresholds.yaml
+2025-04-29 00:59:18 - fraudDetection - INFO - training_pipeline.py:137 - Rules updated successfully
+2025-04-29 00:59:18 - fraudDetection - DEBUG - logger.py:20 - Executed update_rules in 0.0104 seconds
+2025-04-29 00:59:18 - fraudDetection - INFO - main.py:217 - Training pipeline completed successfully
+2025-04-29 01:00:00 - fraudDetection - INFO - main.py:224 - Starting inference pipeline
+2025-04-29 01:00:00 - fraudDetection - DEBUG - logger.py:15 - Starting execution of load_experts
+2025-04-29 01:00:00 - fraudDetection - DEBUG - logger.py:15 - Starting execution of load_model
+2025-04-29 01:00:00 - fraudDetection - INFO - model_ops.py:65 - Loaded classifier model from experts/fraud_classifier/models/classifier_model.pkl
+2025-04-29 01:00:00 - fraudDetection - DEBUG - logger.py:20 - Executed load_model in 0.0287 seconds
+2025-04-29 01:00:00 - fraudDetection - DEBUG - logger.py:15 - Starting execution of load_model
+2025-04-29 01:00:00 - fraudDetection - INFO - model_ops.py:65 - Loaded anomaly model from experts/anomaly_detector/models/isolation_forest.pkl
+2025-04-29 01:00:00 - fraudDetection - DEBUG - logger.py:20 - Executed load_model in 0.0183 seconds
+2025-04-29 01:00:00 - fraudDetection - INFO - context_buffer.py:47 - Context buffer initialized
+2025-04-29 01:00:00 - fraudDetection - INFO - knowledge_graph.py:56 - Initialized empty knowledge graph
+2025-04-29 01:00:00 - fraudDetection - INFO - knowledge_graph.py:25 - Knowledge graph initialized
+2025-04-29 01:00:00 - fraudDetection - ERROR - inference_pipeline.py:49 - Error loading expert systems: expected str, bytes or os.PathLike object, not ContextBuffer
+2025-04-29 01:00:00 - fraudDetection - ERROR - logger.py:25 - Failed executing load_experts after 0.0756 seconds: expected str, bytes or os.PathLike object, not ContextBuffer
+2025-04-29 01:00:00 - fraudDetection - DEBUG - logger.py:26 - Traceback (most recent call last):
+  File "C:\Users\JV\fraud_detection_system\infrastructure\utils\logger.py", line 18, in wrapper
+    result = func(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\JV\fraud_detection_system\pipelines\inference_pipeline.py", line 39, in load_experts
+    classifier = FraudClassifierExpert(classifier_model, context)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\JV\fraud_detection_system\experts\fraud_classifier\predict.py", line 8, in __init__
+    with open(rules_path) as f:
+         ^^^^^^^^^^^^^^^^
+TypeError: expected str, bytes or os.PathLike object, not ContextBuffer
+
+2025-04-29 01:00:00 - fraudDetection - ERROR - main.py:230 - Failed to initialize expert systems: expected str, bytes or os.PathLike object, not ContextBuffer
+2025-04-29 01:01:03 - fraudDetection - INFO - main.py:224 - Starting inference pipeline
+2025-04-29 01:01:03 - fraudDetection - DEBUG - logger.py:15 - Starting execution of load_experts
+2025-04-29 01:01:03 - fraudDetection - DEBUG - logger.py:15 - Starting execution of load_model
+2025-04-29 01:01:03 - fraudDetection - INFO - model_ops.py:65 - Loaded classifier model from experts/fraud_classifier/models/classifier_model.pkl
+2025-04-29 01:01:03 - fraudDetection - DEBUG - logger.py:20 - Executed load_model in 0.0020 seconds
+2025-04-29 01:01:03 - fraudDetection - DEBUG - logger.py:15 - Starting execution of load_model
+2025-04-29 01:01:03 - fraudDetection - INFO - model_ops.py:65 - Loaded anomaly model from experts/anomaly_detector/models/isolation_forest.pkl
+2025-04-29 01:01:03 - fraudDetection - DEBUG - logger.py:20 - Executed load_model in 0.0035 seconds
+2025-04-29 01:01:03 - fraudDetection - INFO - context_buffer.py:47 - Context buffer initialized
+2025-04-29 01:01:03 - fraudDetection - INFO - knowledge_graph.py:56 - Initialized empty knowledge graph
+2025-04-29 01:01:03 - fraudDetection - INFO - knowledge_graph.py:25 - Knowledge graph initialized
+2025-04-29 01:01:03 - fraudDetection - ERROR - inference_pipeline.py:49 - Error loading expert systems: expected str, bytes or os.PathLike object, not ContextBuffer
+2025-04-29 01:01:03 - fraudDetection - ERROR - logger.py:25 - Failed executing load_experts after 0.0130 seconds: expected str, bytes or os.PathLike object, not ContextBuffer
+2025-04-29 01:01:03 - fraudDetection - DEBUG - logger.py:26 - Traceback (most recent call last):
+  File "C:\Users\JV\fraud_detection_system\infrastructure\utils\logger.py", line 18, in wrapper
+    result = func(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\JV\fraud_detection_system\pipelines\inference_pipeline.py", line 39, in load_experts
+    classifier = FraudClassifierExpert(classifier_model, context)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\JV\fraud_detection_system\experts\fraud_classifier\predict.py", line 8, in __init__
+    with open(rules_path) as f:
+         ^^^^^^^^^^^^^^^^
+TypeError: expected str, bytes or os.PathLike object, not ContextBuffer
+
+2025-04-29 01:01:03 - fraudDetection - ERROR - main.py:230 - Failed to initialize expert systems: expected str, bytes or os.PathLike object, not ContextBuffer
+2025-04-29 01:01:42 - fraudDetection - INFO - main.py:224 - Starting inference pipeline
+2025-04-29 01:01:42 - fraudDetection - DEBUG - logger.py:15 - Starting execution of load_experts
+2025-04-29 01:01:42 - fraudDetection - DEBUG - logger.py:15 - Starting execution of load_model
+2025-04-29 01:01:42 - fraudDetection - INFO - model_ops.py:65 - Loaded classifier model from experts/fraud_classifier/models/classifier_model.pkl
+2025-04-29 01:01:42 - fraudDetection - DEBUG - logger.py:20 - Executed load_model in 0.0020 seconds
+2025-04-29 01:01:42 - fraudDetection - DEBUG - logger.py:15 - Starting execution of load_model
+2025-04-29 01:01:42 - fraudDetection - INFO - model_ops.py:65 - Loaded anomaly model from experts/anomaly_detector/models/isolation_forest.pkl
+2025-04-29 01:01:42 - fraudDetection - DEBUG - logger.py:20 - Executed load_model in 0.0030 seconds
+2025-04-29 01:01:42 - fraudDetection - INFO - context_buffer.py:47 - Context buffer initialized
+2025-04-29 01:01:42 - fraudDetection - INFO - knowledge_graph.py:56 - Initialized empty knowledge graph
+2025-04-29 01:01:42 - fraudDetection - INFO - knowledge_graph.py:25 - Knowledge graph initialized
+2025-04-29 01:01:42 - fraudDetection - ERROR - inference_pipeline.py:49 - Error loading expert systems: expected str, bytes or os.PathLike object, not ContextBuffer
+2025-04-29 01:01:42 - fraudDetection - ERROR - logger.py:25 - Failed executing load_experts after 0.0117 seconds: expected str, bytes or os.PathLike object, not ContextBuffer
+2025-04-29 01:01:42 - fraudDetection - DEBUG - logger.py:26 - Traceback (most recent call last):
+  File "C:\Users\JV\fraud_detection_system\infrastructure\utils\logger.py", line 18, in wrapper
+    result = func(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\JV\fraud_detection_system\pipelines\inference_pipeline.py", line 39, in load_experts
+    classifier = FraudClassifierExpert(classifier_model, context)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\JV\fraud_detection_system\experts\fraud_classifier\predict.py", line 8, in __init__
+    with open(rules_path) as f:
+         ^^^^^^^^^^^^^^^^
+TypeError: expected str, bytes or os.PathLike object, not ContextBuffer
+
+2025-04-29 01:01:42 - fraudDetection - ERROR - main.py:230 - Failed to initialize expert systems: expected str, bytes or os.PathLike object, not ContextBuffer
+2025-04-29 01:03:13 - fraudDetection - INFO - main.py:224 - Starting inference pipeline
+2025-04-29 01:03:13 - fraudDetection - DEBUG - logger.py:15 - Starting execution of load_experts
+2025-04-29 01:03:13 - fraudDetection - DEBUG - logger.py:15 - Starting execution of load_model
+2025-04-29 01:03:13 - fraudDetection - INFO - model_ops.py:65 - Loaded classifier model from experts/fraud_classifier/models/classifier_model.pkl
+2025-04-29 01:03:13 - fraudDetection - DEBUG - logger.py:20 - Executed load_model in 0.0027 seconds
+2025-04-29 01:03:13 - fraudDetection - DEBUG - logger.py:15 - Starting execution of load_model
+2025-04-29 01:03:13 - fraudDetection - INFO - model_ops.py:65 - Loaded anomaly model from experts/anomaly_detector/models/isolation_forest.pkl
+2025-04-29 01:03:13 - fraudDetection - DEBUG - logger.py:20 - Executed load_model in 0.0085 seconds
+2025-04-29 01:03:13 - fraudDetection - INFO - context_buffer.py:47 - Context buffer initialized
+2025-04-29 01:03:13 - fraudDetection - INFO - knowledge_graph.py:56 - Initialized empty knowledge graph
+2025-04-29 01:03:13 - fraudDetection - INFO - knowledge_graph.py:25 - Knowledge graph initialized
+2025-04-29 01:03:13 - fraudDetection - INFO - dynamic_adjustments.py:34 - Initialized threshold adjuster with base thresholds: {'critical': -0.7, 'high': -0.4, 'low': 0.0, 'medium': -0.2}
+2025-04-29 01:03:13 - fraudDetection - INFO - detect.py:36 - Initialized anomaly detector expert with thresholds: {'critical': -0.7, 'high': -0.4, 'low': 0.0, 'medium': -0.2}
+2025-04-29 01:03:13 - fraudDetection - INFO - inference_pipeline.py:49 - Expert systems loaded successfully
+2025-04-29 01:03:13 - fraudDetection - DEBUG - logger.py:20 - Executed load_experts in 0.0640 seconds
+2025-04-29 01:03:13 - fraudDetection - DEBUG - logger.py:15 - Starting execution of process_single_transaction
+2025-04-29 01:03:13 - fraudDetection - ERROR - logger.py:25 - Failed executing process_single_transaction after 0.0050 seconds: Expected 2D array, got 1D array instead:
+array=[{'id': 'test123', 'amount': 1000, 'merchant': 'Test Store', 'merchant_category': 'retail', 'country': 'US', 'hour_of_day': 14, 'user_id': 'user123'}].
+Reshape your data either using array.reshape(-1, 1) if your data has a single feature or array.reshape(1, -1) if it contains a single sample.
+2025-04-29 01:03:14 - fraudDetection - DEBUG - logger.py:26 - Traceback (most recent call last):
+  File "C:\Users\JV\fraud_detection_system\infrastructure\utils\logger.py", line 18, in wrapper
+    result = func(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\JV\fraud_detection_system\pipelines\inference_pipeline.py", line 60, in process_single_transaction
+    result = mediator.process_transaction(transaction)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\JV\fraud_detection_system\experts\coordination\mediator.py", line 35, in process_transaction
+    class_report = self.classifier.evaluate(transaction)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\JV\fraud_detection_system\experts\fraud_classifier\predict.py", line 39, in evaluate
+    ml_score = self.model.predict_proba([transaction])[0][1]
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\JV\AppData\Local\Programs\Python\Python312\Lib\site-packages\sklearn\linear_model\_logistic.py", line 1428, in predict_proba
+    return super()._predict_proba_lr(X)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\JV\AppData\Local\Programs\Python\Python312\Lib\site-packages\sklearn\linear_model\_base.py", line 389, in _predict_proba_lr
+    prob = self.decision_function(X)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\JV\AppData\Local\Programs\Python\Python312\Lib\site-packages\sklearn\linear_model\_base.py", line 351, in decision_function
+    X = validate_data(self, X, accept_sparse="csr", reset=False)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\JV\AppData\Local\Programs\Python\Python312\Lib\site-packages\sklearn\utils\validation.py", line 2944, in validate_data
+    out = check_array(X, input_name="X", **check_params)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\JV\AppData\Local\Programs\Python\Python312\Lib\site-packages\sklearn\utils\validation.py", line 1093, in check_array
+    raise ValueError(msg)
+ValueError: Expected 2D array, got 1D array instead:
+array=[{'id': 'test123', 'amount': 1000, 'merchant': 'Test Store', 'merchant_category': 'retail', 'country': 'US', 'hour_of_day': 14, 'user_id': 'user123'}].
+Reshape your data either using array.reshape(-1, 1) if your data has a single feature or array.reshape(1, -1) if it contains a single sample.
+
+2025-04-29 01:03:14 - fraudDetection - ERROR - main.py:256 - Error in inference pipeline: Expected 2D array, got 1D array instead:
+array=[{'id': 'test123', 'amount': 1000, 'merchant': 'Test Store', 'merchant_category': 'retail', 'country': 'US', 'hour_of_day': 14, 'user_id': 'user123'}].
+Reshape your data either using array.reshape(-1, 1) if your data has a single feature or array.reshape(1, -1) if it contains a single sample.
+2025-04-29 01:03:37 - fraudDetection - INFO - main.py:224 - Starting inference pipeline
+2025-04-29 01:03:37 - fraudDetection - DEBUG - logger.py:15 - Starting execution of load_experts
+2025-04-29 01:03:37 - fraudDetection - DEBUG - logger.py:15 - Starting execution of load_model
+2025-04-29 01:03:37 - fraudDetection - INFO - model_ops.py:65 - Loaded classifier model from experts/fraud_classifier/models/classifier_model.pkl
+2025-04-29 01:03:37 - fraudDetection - DEBUG - logger.py:20 - Executed load_model in 0.0021 seconds
+2025-04-29 01:03:37 - fraudDetection - DEBUG - logger.py:15 - Starting execution of load_model
+2025-04-29 01:03:37 - fraudDetection - INFO - model_ops.py:65 - Loaded anomaly model from experts/anomaly_detector/models/isolation_forest.pkl
+2025-04-29 01:03:37 - fraudDetection - DEBUG - logger.py:20 - Executed load_model in 0.0046 seconds
+2025-04-29 01:03:37 - fraudDetection - INFO - context_buffer.py:47 - Context buffer initialized
+2025-04-29 01:03:37 - fraudDetection - INFO - knowledge_graph.py:56 - Initialized empty knowledge graph
+2025-04-29 01:03:37 - fraudDetection - INFO - knowledge_graph.py:25 - Knowledge graph initialized
+2025-04-29 01:03:37 - fraudDetection - INFO - dynamic_adjustments.py:34 - Initialized threshold adjuster with base thresholds: {'critical': -0.7, 'high': -0.4, 'low': 0.0, 'medium': -0.2}
+2025-04-29 01:03:37 - fraudDetection - INFO - detect.py:36 - Initialized anomaly detector expert with thresholds: {'critical': -0.7, 'high': -0.4, 'low': 0.0, 'medium': -0.2}
+2025-04-29 01:03:37 - fraudDetection - INFO - inference_pipeline.py:49 - Expert systems loaded successfully
+2025-04-29 01:03:37 - fraudDetection - DEBUG - logger.py:20 - Executed load_experts in 0.0233 seconds
+2025-04-29 01:03:37 - fraudDetection - DEBUG - logger.py:15 - Starting execution of process_single_transaction
+2025-04-29 01:03:37 - fraudDetection - ERROR - logger.py:25 - Failed executing process_single_transaction after 0.0011 seconds: Expected 2D array, got 1D array instead:
+array=[{'id': 'test123', 'amount': 1000, 'merchant': 'Test Store', 'merchant_category': 'retail', 'country': 'US', 'hour_of_day': 14, 'user_id': 'user123'}].
+Reshape your data either using array.reshape(-1, 1) if your data has a single feature or array.reshape(1, -1) if it contains a single sample.
+2025-04-29 01:03:37 - fraudDetection - DEBUG - logger.py:26 - Traceback (most recent call last):
+  File "C:\Users\JV\fraud_detection_system\infrastructure\utils\logger.py", line 18, in wrapper
+    result = func(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\JV\fraud_detection_system\pipelines\inference_pipeline.py", line 60, in process_single_transaction
+    result = mediator.process_transaction(transaction)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\JV\fraud_detection_system\experts\coordination\mediator.py", line 35, in process_transaction
+    class_report = self.classifier.evaluate(transaction)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\JV\fraud_detection_system\experts\fraud_classifier\predict.py", line 39, in evaluate
+    ml_score = self.model.predict_proba([transaction])[0][1]
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\JV\AppData\Local\Programs\Python\Python312\Lib\site-packages\sklearn\linear_model\_logistic.py", line 1428, in predict_proba
+    return super()._predict_proba_lr(X)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\JV\AppData\Local\Programs\Python\Python312\Lib\site-packages\sklearn\linear_model\_base.py", line 389, in _predict_proba_lr
+    prob = self.decision_function(X)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\JV\AppData\Local\Programs\Python\Python312\Lib\site-packages\sklearn\linear_model\_base.py", line 351, in decision_function
+    X = validate_data(self, X, accept_sparse="csr", reset=False)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\JV\AppData\Local\Programs\Python\Python312\Lib\site-packages\sklearn\utils\validation.py", line 2944, in validate_data
+    out = check_array(X, input_name="X", **check_params)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\JV\AppData\Local\Programs\Python\Python312\Lib\site-packages\sklearn\utils\validation.py", line 1093, in check_array
+    raise ValueError(msg)
+ValueError: Expected 2D array, got 1D array instead:
+array=[{'id': 'test123', 'amount': 1000, 'merchant': 'Test Store', 'merchant_category': 'retail', 'country': 'US', 'hour_of_day': 14, 'user_id': 'user123'}].
+Reshape your data either using array.reshape(-1, 1) if your data has a single feature or array.reshape(1, -1) if it contains a single sample.
+
+2025-04-29 01:03:37 - fraudDetection - ERROR - main.py:256 - Error in inference pipeline: Expected 2D array, got 1D array instead:
+array=[{'id': 'test123', 'amount': 1000, 'merchant': 'Test Store', 'merchant_category': 'retail', 'country': 'US', 'hour_of_day': 14, 'user_id': 'user123'}].
+Reshape your data either using array.reshape(-1, 1) if your data has a single feature or array.reshape(1, -1) if it contains a single sample.
+2025-04-29 01:04:46 - fraudDetection - INFO - main.py:224 - Starting inference pipeline
+2025-04-29 01:04:46 - fraudDetection - DEBUG - logger.py:15 - Starting execution of load_experts
+2025-04-29 01:04:46 - fraudDetection - DEBUG - logger.py:15 - Starting execution of load_model
+2025-04-29 01:04:46 - fraudDetection - INFO - model_ops.py:65 - Loaded classifier model from experts/fraud_classifier/models/classifier_model.pkl
+2025-04-29 01:04:46 - fraudDetection - DEBUG - logger.py:20 - Executed load_model in 0.0010 seconds
+2025-04-29 01:04:46 - fraudDetection - DEBUG - logger.py:15 - Starting execution of load_model
+2025-04-29 01:04:46 - fraudDetection - INFO - model_ops.py:65 - Loaded anomaly model from experts/anomaly_detector/models/isolation_forest.pkl
+2025-04-29 01:04:46 - fraudDetection - DEBUG - logger.py:20 - Executed load_model in 0.0063 seconds
+2025-04-29 01:04:46 - fraudDetection - INFO - context_buffer.py:47 - Context buffer initialized
+2025-04-29 01:04:46 - fraudDetection - INFO - knowledge_graph.py:56 - Initialized empty knowledge graph
+2025-04-29 01:04:46 - fraudDetection - INFO - knowledge_graph.py:25 - Knowledge graph initialized
+2025-04-29 01:04:46 - fraudDetection - INFO - dynamic_adjustments.py:34 - Initialized threshold adjuster with base thresholds: {'critical': -0.7, 'high': -0.4, 'low': 0.0, 'medium': -0.2}
+2025-04-29 01:04:46 - fraudDetection - INFO - detect.py:36 - Initialized anomaly detector expert with thresholds: {'critical': -0.7, 'high': -0.4, 'low': 0.0, 'medium': -0.2}
+2025-04-29 01:04:46 - fraudDetection - INFO - inference_pipeline.py:49 - Expert systems loaded successfully
+2025-04-29 01:04:46 - fraudDetection - DEBUG - logger.py:20 - Executed load_experts in 0.0166 seconds
+2025-04-29 01:04:46 - fraudDetection - DEBUG - logger.py:15 - Starting execution of process_single_transaction
+2025-04-29 01:04:46 - fraudDetection - ERROR - logger.py:25 - Failed executing process_single_transaction after 0.0050 seconds: float() argument must be a string or a real number, not 'dict'
+2025-04-29 01:04:46 - fraudDetection - DEBUG - logger.py:26 - Traceback (most recent call last):
+  File "C:\Users\JV\fraud_detection_system\infrastructure\utils\logger.py", line 18, in wrapper
+    result = func(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\JV\fraud_detection_system\pipelines\inference_pipeline.py", line 60, in process_single_transaction
+    result = mediator.process_transaction(transaction)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\JV\fraud_detection_system\experts\coordination\mediator.py", line 36, in process_transaction
+    anom_report = self.detector.analyze(transaction)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\JV\fraud_detection_system\experts\anomaly_detector\detect.py", line 70, in analyze
+    raw_score = self.model.decision_function([transaction])[0]
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\JV\AppData\Local\Programs\Python\Python312\Lib\site-packages\sklearn\ensemble\_iforest.py", line 474, in decision_function
+    return self.score_samples(X) - self.offset_
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\JV\AppData\Local\Programs\Python\Python312\Lib\site-packages\sklearn\ensemble\_iforest.py", line 519, in score_samples
+    X = validate_data(
+        ^^^^^^^^^^^^^^
+  File "C:\Users\JV\AppData\Local\Programs\Python\Python312\Lib\site-packages\sklearn\utils\validation.py", line 2944, in validate_data
+    out = check_array(X, input_name="X", **check_params)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\JV\AppData\Local\Programs\Python\Python312\Lib\site-packages\sklearn\utils\validation.py", line 1055, in check_array
+    array = _asarray_with_order(array, order=order, dtype=dtype, xp=xp)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\JV\AppData\Local\Programs\Python\Python312\Lib\site-packages\sklearn\utils\_array_api.py", line 839, in _asarray_with_order
+    array = numpy.asarray(array, order=order, dtype=dtype)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: float() argument must be a string or a real number, not 'dict'
+
+2025-04-29 01:04:46 - fraudDetection - ERROR - main.py:256 - Error in inference pipeline: float() argument must be a string or a real number, not 'dict'
+2025-04-29 01:05:45 - fraudDetection - INFO - main.py:224 - Starting inference pipeline
+2025-04-29 01:05:45 - fraudDetection - DEBUG - logger.py:15 - Starting execution of load_experts
+2025-04-29 01:05:45 - fraudDetection - DEBUG - logger.py:15 - Starting execution of load_model
+2025-04-29 01:05:45 - fraudDetection - INFO - model_ops.py:65 - Loaded classifier model from experts/fraud_classifier/models/classifier_model.pkl
+2025-04-29 01:05:45 - fraudDetection - DEBUG - logger.py:20 - Executed load_model in 0.0025 seconds
+2025-04-29 01:05:45 - fraudDetection - DEBUG - logger.py:15 - Starting execution of load_model
+2025-04-29 01:05:45 - fraudDetection - INFO - model_ops.py:65 - Loaded anomaly model from experts/anomaly_detector/models/isolation_forest.pkl
+2025-04-29 01:05:45 - fraudDetection - DEBUG - logger.py:20 - Executed load_model in 0.0049 seconds
+2025-04-29 01:05:45 - fraudDetection - INFO - context_buffer.py:47 - Context buffer initialized
+2025-04-29 01:05:45 - fraudDetection - INFO - knowledge_graph.py:56 - Initialized empty knowledge graph
+2025-04-29 01:05:45 - fraudDetection - INFO - knowledge_graph.py:25 - Knowledge graph initialized
+2025-04-29 01:05:45 - fraudDetection - INFO - dynamic_adjustments.py:34 - Initialized threshold adjuster with base thresholds: {'critical': -0.7, 'high': -0.4, 'low': 0.0, 'medium': -0.2}
+2025-04-29 01:05:45 - fraudDetection - INFO - detect.py:36 - Initialized anomaly detector expert with thresholds: {'critical': -0.7, 'high': -0.4, 'low': 0.0, 'medium': -0.2}
+2025-04-29 01:05:45 - fraudDetection - INFO - inference_pipeline.py:49 - Expert systems loaded successfully
+2025-04-29 01:05:45 - fraudDetection - DEBUG - logger.py:20 - Executed load_experts in 0.0233 seconds
+2025-04-29 01:05:45 - fraudDetection - DEBUG - logger.py:15 - Starting execution of process_single_transaction
+2025-04-29 01:05:45 - fraudDetection - ERROR - logger.py:25 - Failed executing process_single_transaction after 0.0100 seconds: 'NoneType' object has no attribute 'update'
+2025-04-29 01:05:45 - fraudDetection - DEBUG - logger.py:26 - Traceback (most recent call last):
+  File "C:\Users\JV\fraud_detection_system\infrastructure\utils\logger.py", line 18, in wrapper
+    result = func(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\JV\fraud_detection_system\pipelines\inference_pipeline.py", line 60, in process_single_transaction
+    result = mediator.process_transaction(transaction)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\JV\fraud_detection_system\experts\coordination\mediator.py", line 39, in process_transaction
+    self.context.update(transaction, class_report, anom_report)
+    ^^^^^^^^^^^^^^^^^^^
+AttributeError: 'NoneType' object has no attribute 'update'
+
+2025-04-29 01:05:45 - fraudDetection - ERROR - main.py:256 - Error in inference pipeline: 'NoneType' object has no attribute 'update'
+2025-04-29 01:06:41 - fraudDetection - INFO - main.py:224 - Starting inference pipeline
+2025-04-29 01:06:41 - fraudDetection - DEBUG - logger.py:15 - Starting execution of load_experts
+2025-04-29 01:06:41 - fraudDetection - DEBUG - logger.py:15 - Starting execution of load_model
+2025-04-29 01:06:41 - fraudDetection - INFO - model_ops.py:65 - Loaded classifier model from experts/fraud_classifier/models/classifier_model.pkl
+2025-04-29 01:06:41 - fraudDetection - DEBUG - logger.py:20 - Executed load_model in 0.0010 seconds
+2025-04-29 01:06:41 - fraudDetection - DEBUG - logger.py:15 - Starting execution of load_model
+2025-04-29 01:06:41 - fraudDetection - INFO - model_ops.py:65 - Loaded anomaly model from experts/anomaly_detector/models/isolation_forest.pkl
+2025-04-29 01:06:41 - fraudDetection - DEBUG - logger.py:20 - Executed load_model in 0.0036 seconds
+2025-04-29 01:06:41 - fraudDetection - INFO - context_buffer.py:47 - Context buffer initialized
+2025-04-29 01:06:41 - fraudDetection - INFO - knowledge_graph.py:56 - Initialized empty knowledge graph
+2025-04-29 01:06:41 - fraudDetection - INFO - knowledge_graph.py:25 - Knowledge graph initialized
+2025-04-29 01:06:41 - fraudDetection - INFO - dynamic_adjustments.py:34 - Initialized threshold adjuster with base thresholds: {'critical': -0.7, 'high': -0.4, 'low': 0.0, 'medium': -0.2}
+2025-04-29 01:06:41 - fraudDetection - INFO - detect.py:36 - Initialized anomaly detector expert with thresholds: {'critical': -0.7, 'high': -0.4, 'low': 0.0, 'medium': -0.2}
+2025-04-29 01:06:41 - fraudDetection - INFO - context_buffer.py:47 - Context buffer initialized
+2025-04-29 01:06:41 - fraudDetection - INFO - inference_pipeline.py:49 - Expert systems loaded successfully
+2025-04-29 01:06:41 - fraudDetection - DEBUG - logger.py:20 - Executed load_experts in 0.0276 seconds
+2025-04-29 01:06:41 - fraudDetection - DEBUG - logger.py:15 - Starting execution of process_single_transaction
+2025-04-29 01:06:41 - fraudDetection - INFO - mediator.py:50 - Experts collab decision: ALLOW
+2025-04-29 01:06:41 - fraudDetection - INFO - inference_pipeline.py:65 - Transaction test123 processed with decision: ALLOW
+2025-04-29 01:06:41 - fraudDetection - DEBUG - logger.py:20 - Executed process_single_transaction in 0.0102 seconds
+2025-04-29 01:06:41 - fraudDetection - INFO - main.py:259 - Inference pipeline completed successfully
+2025-04-29 01:09:37 - fraudDetection - INFO - main.py:264 - Model evaluation for both not implemented yet
