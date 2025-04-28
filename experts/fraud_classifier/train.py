@@ -1,180 +1,259 @@
-# experts/fraud_classifier/train.py
+#!/usr/bin/env python
+"""
+Training module for the Fraud Classifier expert system.
+Implements supervised learning for known fraud pattern detection.
+"""
 
-import pandas as pd
-import yaml
 import os
+import pandas as pd
+import numpy as np
+from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import classification_report, confusion_matrix, accuracy_score, precision_score, recall_score, f1_score
+from sklearn.model_selection import GridSearchCV
+from imblearn.over_sampling import SMOTE
 
-# Import specific utilities provided
-from infrastructure.utils import (
-    load_processed_data,
-    split_data,
-    save_model,
-    save_model_metrics,
-    logger,  # Use the pre-configured logger instance
-    log_execution_time
-)
-
-# --- Configuration ---
-# Assume config files are still loaded directly here, as utils use them internally
-CONFIG_DIR = os.path.join(os.path.dirname(__file__), '../../infrastructure/config')
-PATHS_CONFIG_PATH = os.path.join(CONFIG_DIR, 'paths.yaml')
-PARAMS_CONFIG_PATH = os.path.join(CONFIG_DIR, 'model_params.yaml')
-
-# Load configurations
-try:
-    with open(PATHS_CONFIG_PATH, 'r') as f:
-        paths_config = yaml.safe_load(f)
-    with open(PARAMS_CONFIG_PATH, 'r') as f:
-        params_config = yaml.safe_load(f)
-except FileNotFoundError as e:
-    logger.error(f"Configuration file not found: {e}")
-    raise
-except yaml.YAMLError as e:
-    logger.error(f"Error parsing YAML configuration: {e}")
-    raise
-
-# --- Constants ---
-# Path definitions might be less critical here if utils handle them,
-# but useful for reference or if needed elsewhere.
-PROCESSED_DATA_RELATIVE_PATH = paths_config['data']['processed'] # Path relative to project root
-CLASSIFIER_MODEL_NAME = 'classifier' # Name used in model_ops
-
-TARGET_COLUMN = params_config.get('data', {}).get('target_column', 'Class')
-CLASSIFIER_PARAMS = params_config.get('fraud_classifier', {}).get('logistic_regression', {})
-TEST_SIZE = params_config.get('training', {}).get('test_split_ratio', 0.2)
-RANDOM_STATE = params_config.get('training', {}).get('random_state', 42)
-
-# --- Main Training Logic ---
-
-@log_execution_time # Apply the execution time logging decorator
-def run_training():
-    """
-    Loads data, trains the supervised fraud classifier (Logistic Regression),
-    evaluates it, saves the trained model and metrics using infrastructure utilities.
-    """
-    logger.info("Starting Fraud Classifier training pipeline...")
-
-    # 1. Load Data using the utility
-    logger.info(f"Loading processed data ('{PROCESSED_DATA_RELATIVE_PATH}') via utility...")
-    try:
-        # load_processed_data internally resolves the full path using project root and paths.yaml
-        df = load_processed_data()
-        logger.info(f"Data loaded successfully. Shape: {df.shape}")
-    except FileNotFoundError:
-        logger.error(f"Processed data file not found at expected location derived from '{PROCESSED_DATA_RELATIVE_PATH}'. Ensure it exists or run processing first.")
-        raise
-    except Exception as e:
-        logger.error(f"Failed to load data: {e}")
-        raise
-
-    # Check target column exists before splitting
-    if TARGET_COLUMN not in df.columns:
-        logger.error(f"Target column '{TARGET_COLUMN}' not found in the loaded dataset.")
-        raise ValueError(f"Target column '{TARGET_COLUMN}' not found.")
-
-    # Check for class imbalance (informational) - before splitting
-    class_distribution = df[TARGET_COLUMN].value_counts(normalize=True)
-    logger.info(f"Target class distribution in loaded data:\n{class_distribution}")
-    if class_distribution.min() < 0.05: # Example threshold
-         logger.warning("Significant class imbalance detected. Logistic Regression uses class_weight='balanced'.")
+from infrastructure.utils import logger, log_execution_time
+from infrastructure.config import load_params
 
 
-    # 2. Split Data using the utility
-    logger.info(f"Splitting data using utility (Test size: {TEST_SIZE}, Target: '{TARGET_COLUMN}')...")
-    try:
-        # The split_data utility handles X, y separation and splitting
-        X_train, X_test, y_train, y_test = split_data(
-            df=df,
-            target_col=TARGET_COLUMN,
-            test_size=TEST_SIZE,
-            random_state=RANDOM_STATE
+class FraudClassifierTrainer:
+    """Trainer for the supervised fraud classification model"""
+
+    def __init__(self, params=None):
+        """
+        Initialize the fraud classifier trainer.
+
+        Args:
+            params (dict, optional): Model hyperparameters. If None, loads from config.
+        """
+        self.params = params or load_params('fraud_classifier')
+        logger.info(f"Initialized fraud classifier trainer with params: {self.params}")
+
+        # Define preprocessing steps
+        self.scaler = StandardScaler()
+
+        # Setup SMOTE for handling class imbalance
+        self.smote = SMOTE(
+            random_state=self.params.get('random_state', 42),
+            sampling_strategy=self.params.get('sampling_strategy', 0.1)
         )
-        logger.info(f"Data split complete. Training features: {X_train.shape}, Test features: {X_test.shape}")
-    except Exception as e:
-        logger.error(f"Failed to split data: {e}")
-        raise
 
-    # 3. Train Model
-    logger.info("Training Logistic Regression model...")
-    # Ensure class_weight='balanced' is used as specified in the overview
-    model_params = CLASSIFIER_PARAMS.copy() # Avoid modifying the original dict
-    model_params['class_weight'] = 'balanced'
-    model_params['random_state'] = RANDOM_STATE # Ensure reproducibility
-    # Add solver if not specified, as default 'lbfgs' might warn with large datasets/penalty
-    if 'solver' not in model_params:
-        model_params['solver'] = 'liblinear' # A reasonable default
+        # Initialize the model
+        self._init_model()
 
-    try:
-        model = LogisticRegression(**model_params)
-        model.fit(X_train, y_train)
-        logger.info("Model training completed.")
-    except Exception as e:
-        logger.error(f"Model training failed: {e}")
-        raise
+    def _init_model(self):
+        """Initialize the classifier model based on configuration"""
+        model_type = self.params.get('model_type', 'logistic_regression')
 
-    # 4. Evaluate Model
-    logger.info("Evaluating model performance on the test set...")
-    y_pred = model.predict(X_test)
-    y_pred_proba = model.predict_proba(X_test)[:, 1] # Probability for the positive class
+        if model_type == 'logistic_regression':
+            self.model = LogisticRegression(
+                C=self.params.get('C', 1.0),
+                penalty=self.params.get('penalty', 'l2'),
+                class_weight=self.params.get('class_weight', 'balanced'),
+                random_state=self.params.get('random_state', 42),
+                max_iter=self.params.get('max_iter', 1000),
+                n_jobs=-1
+            )
+        else:
+            raise ValueError(f"Unsupported model type: {model_type}")
 
-    # Calculate metrics
-    accuracy = accuracy_score(y_test, y_pred)
-    precision = precision_score(y_test, y_pred)
-    recall = recall_score(y_test, y_pred)
-    f1 = f1_score(y_test, y_pred)
-    report = classification_report(y_test, y_pred)
-    cm = confusion_matrix(y_test, y_pred)
+    @log_execution_time
+    def preprocess(self, X, y=None):
+        """
+        Preprocess data for model training or inference.
 
-    logger.info("--- Classification Report ---")
-    for line in report.split('\n'): # Log line by line for better readability
-        logger.info(line)
-    logger.info("--- Confusion Matrix ---")
-    logger.info(f"\n{cm}")
-    logger.info(f"Accuracy: {accuracy:.4f}, Precision: {precision:.4f}, Recall: {recall:.4f}, F1-Score: {f1:.4f}")
+        Args:
+            X (DataFrame): Features
+            y (Series, optional): Target variable, required for training
 
-    # 5. Save Metrics using the utility
-    logger.info("Saving evaluation metrics...")
-    metrics_dict = {
-        'accuracy': accuracy,
-        'precision': precision,
-        'recall': recall,
-        'f1_score': f1,
-        'confusion_matrix': cm.tolist(), # Convert numpy array to list for JSON serialization
-        'classification_report': report,
-        'model_params': model_params,
-        'data_shape': {'train': X_train.shape, 'test': X_test.shape},
-        'target_distribution_test': y_test.value_counts().to_dict()
-    }
-    try:
-        # save_model_metrics handles path resolution and saving to JSON
-        save_model_metrics(metrics=metrics_dict, model_name=CLASSIFIER_MODEL_NAME)
-        logger.info(f"Metrics saved for model '{CLASSIFIER_MODEL_NAME}'.")
-    except Exception as e:
-        logger.error(f"Failed to save metrics: {e}")
-        # Continue to save the model even if metrics saving fails
+        Returns:
+            X_processed: Processed features
+            y_resampled: Resampled targets (if y is provided)
+        """
+        # Make a copy to avoid modifying original data
+        X_copy = X.copy()
 
-    # 6. Save Model using the utility
-    logger.info(f"Saving trained model '{CLASSIFIER_MODEL_NAME}' using utility...")
-    try:
-        # save_model handles path resolution, directory creation, and saving via pickle
-        saved_path = save_model(model=model, model_name=CLASSIFIER_MODEL_NAME)
-        logger.info(f"Model saved successfully to relative path: {saved_path}")
-    except Exception as e:
-        logger.error(f"Failed to save model: {e}")
-        raise # Fail the pipeline if model saving fails
+        # Extract features to use - exclude non-predictive columns
+        feature_cols = self.params.get('feature_cols', X_copy.columns)
+        features = X_copy[feature_cols]
 
-    logger.info("Fraud Classifier training pipeline finished successfully.")
+        # Scale numeric features
+        X_scaled = self.scaler.fit_transform(features)
+        X_processed = pd.DataFrame(X_scaled, columns=feature_cols)
+
+        # Apply SMOTE for class imbalance if we have labels
+        if y is not None:
+            X_resampled, y_resampled = self.smote.fit_resample(X_processed, y)
+            logger.info(f"Applied SMOTE: {sum(y)} fraud → {sum(y_resampled)} fraud samples")
+            return X_resampled, y_resampled
+
+        return X_processed
+
+    @log_execution_time
+    def train(self, X, y, optimize=False):
+        """
+        Train the fraud classifier.
+
+        Args:
+            X (DataFrame): Features
+            y (Series): Target variable (1 for fraud, 0 for legitimate)
+            optimize (bool): Whether to perform hyperparameter optimization
+
+        Returns:
+            model: Trained classifier model
+        """
+        logger.info(f"Training fraud classifier on {len(X)} samples ({sum(y)} fraud instances)")
+
+        # Preprocess data
+        X_train, y_train = self.preprocess(X, y)
+
+        # Optimize hyperparameters if requested
+        if optimize:
+            logger.info("Starting hyperparameter optimization")
+            param_grid = self.params.get('param_grid', {
+                'C': [0.01, 0.1, 1.0, 10.0],
+                'penalty': ['l1', 'l2'],
+                'class_weight': ['balanced', None]
+            })
+
+            grid_search = GridSearchCV(
+                self.model, param_grid, cv=5, scoring='f1', n_jobs=-1
+            )
+            grid_search.fit(X_train, y_train)
+
+            self.model = grid_search.best_estimator_
+            logger.info(f"Best parameters: {grid_search.best_params_}")
+        else:
+            # Train model with current parameters
+            self.model.fit(X_train, y_train)
+
+        # Extract feature importance
+        self._analyze_feature_importance(X_train.columns)
+
+        return self.model
+
+    def _analyze_feature_importance(self, feature_names):
+        """
+        Analyze and log feature importance from the trained model.
+        Used for rule generation and model explainability.
+
+        Args:
+            feature_names: List of feature column names
+        """
+        # For logistic regression, coefficient magnitude indicates importance
+        if hasattr(self.model, 'coef_'):
+            coefficients = self.model.coef_[0]
+            importance_df = pd.DataFrame({
+                'Feature': feature_names,
+                'Coefficient': coefficients,
+                'Abs_Value': np.abs(coefficients)
+            })
+
+            # Sort by absolute importance
+            importance_df = importance_df.sort_values('Abs_Value', ascending=False)
+
+            # Log top N most important features
+            top_n = min(10, len(importance_df))
+            logger.info(f"Top {top_n} important features:")
+            for i, row in importance_df.head(top_n).iterrows():
+                logger.info(f"  {row['Feature']}: {row['Coefficient']:.4f}")
+
+            # Store feature importance for rule generation
+            self.feature_importance = importance_df
+
+    def predict(self, X):
+        """
+        Make predictions using the trained model.
+
+        Args:
+            X (DataFrame): Features to predict
+
+        Returns:
+            predictions: Binary predictions (1 for fraud, 0 for legitimate)
+        """
+        X_processed = self.preprocess(X)
+        return self.model.predict(X_processed)
+
+    def predict_proba(self, X):
+        """
+        Get fraud probability scores.
+
+        Args:
+            X (DataFrame): Features to predict
+
+        Returns:
+            probabilities: Probability of fraud for each transaction
+        """
+        X_processed = self.preprocess(X)
+        proba = self.model.predict_proba(X_processed)
+        return proba[:, 1]  # Return probability of class 1 (fraud)
+
+    def suggest_rules(self, threshold=0.5):
+        """
+        Generate rule suggestions based on model coefficients.
+
+        Args:
+            threshold (float): Coefficient magnitude threshold for suggesting rules
+
+        Returns:
+            rules (dict): Dictionary of suggested rules based on model insights
+        """
+        if not hasattr(self, 'feature_importance'):
+            logger.warning("No feature importance available. Train model first.")
+            return {}
+
+        # Filter features with significant coefficients
+        significant = self.feature_importance[
+            self.feature_importance['Abs_Value'] > threshold
+            ]
+
+        rule_suggestions = {}
+        for _, row in significant.iterrows():
+            feature = row['Feature']
+            coef = row['Coefficient']
+
+            # Positive coefficients indicate fraud signals
+            if coef > 0:
+                rule_suggestions[feature] = {
+                    'direction': 'high',
+                    'coefficient': float(coef),
+                    'suggested_threshold': 'upper_percentile_95'
+                }
+            else:
+                rule_suggestions[feature] = {
+                    'direction': 'low',
+                    'coefficient': float(coef),
+                    'suggested_threshold': 'lower_percentile_5'
+                }
+
+        return rule_suggestions
+
 
 if __name__ == "__main__":
-    logger.info("Starting script execution...")
-    try:
-        run_training()
-        logger.info("Script finished successfully.")
-    except Exception as e:
-        # The decorator @log_execution_time already logs the error,
-        # but we add a critical log here for script exit.
-        logger.critical(f"Training pipeline failed: {e}", exc_info=False) # Set exc_info=False to avoid duplicate traceback from decorator
-        exit(1)
+    # Simple test code
+    from sklearn.datasets import make_classification
 
+    # Generate synthetic data
+    X, y = make_classification(
+        n_samples=1000, n_features=20, n_informative=10,
+        n_redundant=5, n_clusters_per_class=2, weights=[0.95, 0.05],
+        random_state=42
+    )
+    X_df = pd.DataFrame(X, columns=[f'V{i}' for i in range(20)])
+    y_series = pd.Series(y)
+
+    # Train classifier
+    trainer = FraudClassifierTrainer()
+    model = trainer.train(X_df, y_series)
+
+    # Get predictions
+    y_pred = trainer.predict(X_df)
+    y_proba = trainer.predict_proba(X_df)
+
+    # Print accuracy
+    accuracy = (y_pred == y_series).mean()
+    print(f"Test accuracy: {accuracy:.4f}")
+
+    # Generate rule suggestions
+    rules = trainer.suggest_rules(threshold=0.4)
+    print(f"Generated {len(rules)} rule suggestions")
