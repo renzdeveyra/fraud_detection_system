@@ -80,3 +80,121 @@ Trying to import the above resulted in these errors:
                             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 TypeError: load_params() takes 0 positional arguments but 1 was given
 
+2025-04-28 22:58:05 - fraudDetection - INFO - main.py:158 - Model evaluation for both not implemented yet
+2025-04-28 23:19:30 - fraudDetection - INFO - main.py:92 - Starting training pipeline
+2025-04-28 23:19:30 - fraudDetection - DEBUG - logger.py:15 - Starting execution of train_classifier
+2025-04-28 23:19:30 - fraudDetection - INFO - training_pipeline.py:27 - Starting fraud classifier training
+2025-04-28 23:19:31 - fraudDetection - ERROR - logger.py:25 - Failed executing train_classifier after 1.1068 seconds: Unable to find a usable engine; tried using: 'pyarrow', 'fastparquet'.
+A suitable version of pyarrow or fastparquet is required for parquet support.
+Trying to import the above resulted in these errors:
+ - Missing optional dependency 'pyarrow'. pyarrow is required for parquet support. Use pip or conda to install pyarrow.
+ - Missing optional dependency 'fastparquet'. fastparquet is required for parquet support. Use pip or conda to install fastparquet.
+2025-04-28 23:19:31 - fraudDetection - DEBUG - logger.py:26 - Traceback (most recent call last):
+  File "C:\Users\JV\fraud_detection_system\infrastructure\utils\logger.py", line 18, in wrapper
+    result = func(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\JV\fraud_detection_system\pipelines\training_pipeline.py", line 34, in train_classifier
+    df = process_raw_data(save=True)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\JV\fraud_detection_system\infrastructure\utils\data_loader.py", line 46, in process_raw_data
+    processed_df.to_parquet(output_path, index=False)
+  File "C:\Users\JV\AppData\Local\Programs\Python\Python312\Lib\site-packages\pandas\util\_decorators.py", line 333, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\JV\AppData\Local\Programs\Python\Python312\Lib\site-packages\pandas\core\frame.py", line 3113, in to_parquet
+    return to_parquet(
+           ^^^^^^^^^^^
+  File "C:\Users\JV\AppData\Local\Programs\Python\Python312\Lib\site-packages\pandas\io\parquet.py", line 476, in to_parquet
+    impl = get_engine(engine)
+           ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\JV\AppData\Local\Programs\Python\Python312\Lib\site-packages\pandas\io\parquet.py", line 67, in get_engine
+    raise ImportError(
+ImportError: Unable to find a usable engine; tried using: 'pyarrow', 'fastparquet'.
+A suitable version of pyarrow or fastparquet is required for parquet support.
+Trying to import the above resulted in these errors:
+ - Missing optional dependency 'pyarrow'. pyarrow is required for parquet support. Use pip or conda to install pyarrow.
+ - Missing optional dependency 'fastparquet'. fastparquet is required for parquet support. Use pip or conda to install fastparquet.
+
+2025-04-28 23:20:18 - fraudDetection - INFO - main.py:92 - Starting training pipeline
+2025-04-28 23:20:18 - fraudDetection - DEBUG - logger.py:15 - Starting execution of train_classifier
+2025-04-28 23:20:18 - fraudDetection - INFO - training_pipeline.py:27 - Starting fraud classifier training
+2025-04-28 23:20:20 - fraudDetection - INFO - training_pipeline.py:35 - Loaded and processed default data
+2025-04-28 23:20:20 - fraudDetection - ERROR - logger.py:25 - Failed executing train_classifier after 2.2820 seconds: load_params() takes 0 positional arguments but 1 was given
+2025-04-28 23:20:20 - fraudDetection - DEBUG - logger.py:26 - Traceback (most recent call last):
+  File "C:\Users\JV\fraud_detection_system\infrastructure\utils\logger.py", line 18, in wrapper
+    result = func(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\JV\fraud_detection_system\pipelines\training_pipeline.py", line 41, in train_classifier
+    trainer = FraudClassifierTrainer()
+              ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\JV\fraud_detection_system\experts\fraud_classifier\train.py", line 29, in __init__
+    self.params = params or load_params('fraud_classifier')
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: load_params() takes 0 positional arguments but 1 was given
+
+2025-04-28 23:21:31 - fraudDetection - INFO - main.py:92 - Starting training pipeline
+2025-04-28 23:21:31 - fraudDetection - DEBUG - logger.py:15 - Starting execution of train_classifier
+2025-04-28 23:21:31 - fraudDetection - INFO - training_pipeline.py:27 - Starting fraud classifier training
+2025-04-28 23:21:34 - fraudDetection - INFO - training_pipeline.py:35 - Loaded and processed default data
+2025-04-28 23:21:34 - fraudDetection - INFO - train.py:31 - Initialized fraud classifier trainer with params: {'model_type': 'LogisticRegression', 'params': {'class_weight': 'balanced', 'C': 0.1, 'max_iter': 1000, 'solver': 'liblinear'}, 'rules': {'max_hourly_transactions': 5, 'amount_deviation_multiplier': 3, 'max_daily_amount': 10000, 'suspicious_countries': ['XX', 'YY', 'ZZ']}}
+2025-04-28 23:21:34 - fraudDetection - ERROR - logger.py:25 - Failed executing train_classifier after 3.5300 seconds: Unsupported model type: LogisticRegression
+2025-04-28 23:21:34 - fraudDetection - DEBUG - logger.py:26 - Traceback (most recent call last):
+  File "C:\Users\JV\fraud_detection_system\infrastructure\utils\logger.py", line 18, in wrapper
+    result = func(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\JV\fraud_detection_system\pipelines\training_pipeline.py", line 41, in train_classifier
+    trainer = FraudClassifierTrainer()
+              ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\JV\fraud_detection_system\experts\fraud_classifier\train.py", line 43, in __init__
+    self._init_model()
+  File "C:\Users\JV\fraud_detection_system\experts\fraud_classifier\train.py", line 59, in _init_model
+    raise ValueError(f"Unsupported model type: {model_type}")
+ValueError: Unsupported model type: LogisticRegression
+
+2025-04-28 23:22:31 - fraudDetection - INFO - main.py:92 - Starting training pipeline
+2025-04-28 23:22:31 - fraudDetection - DEBUG - logger.py:15 - Starting execution of train_classifier
+2025-04-28 23:22:31 - fraudDetection - INFO - training_pipeline.py:27 - Starting fraud classifier training
+2025-04-28 23:22:33 - fraudDetection - INFO - training_pipeline.py:35 - Loaded and processed default data
+2025-04-28 23:22:33 - fraudDetection - INFO - train.py:31 - Initialized fraud classifier trainer with params: {'model_type': 'LogisticRegression', 'params': {'class_weight': 'balanced', 'C': 0.1, 'max_iter': 1000, 'solver': 'liblinear'}, 'rules': {'max_hourly_transactions': 5, 'amount_deviation_multiplier': 3, 'max_daily_amount': 10000, 'suspicious_countries': ['XX', 'YY', 'ZZ']}}
+2025-04-28 23:22:33 - fraudDetection - DEBUG - logger.py:15 - Starting execution of train
+2025-04-28 23:22:33 - fraudDetection - INFO - train.py:110 - Training fraud classifier on 227845 samples (394 fraud instances)
+2025-04-28 23:22:33 - fraudDetection - DEBUG - logger.py:15 - Starting execution of preprocess
+2025-04-28 23:22:34 - fraudDetection - DEBUG - logger.py:20 - Executed preprocess in 0.8973 seconds
+2025-04-28 23:22:37 - fraudDetection - INFO - train.py:162 - Top 10 important features:
+2025-04-28 23:22:37 - fraudDetection - INFO - train.py:164 -   V10: -1.7450
+2025-04-28 23:22:37 - fraudDetection - INFO - train.py:164 -   V4: 1.5977
+2025-04-28 23:22:37 - fraudDetection - INFO - train.py:164 -   V1: 1.5443
+2025-04-28 23:22:37 - fraudDetection - INFO - train.py:164 -   V14: -1.5031
+2025-04-28 23:22:37 - fraudDetection - INFO - train.py:164 -   V5: 1.0812
+2025-04-28 23:22:37 - fraudDetection - INFO - train.py:164 -   V17: -1.0335
+2025-04-28 23:22:37 - fraudDetection - INFO - train.py:164 -   V12: -1.0129
+2025-04-28 23:22:37 - fraudDetection - INFO - train.py:164 -   V16: -0.9293
+2025-04-28 23:22:37 - fraudDetection - INFO - train.py:164 -   V20: -0.8766
+2025-04-28 23:22:37 - fraudDetection - INFO - train.py:164 -   norm_amount: 0.8528
+2025-04-28 23:22:37 - fraudDetection - DEBUG - logger.py:20 - Executed train in 3.8377 seconds
+2025-04-28 23:22:37 - fraudDetection - INFO - training_pipeline.py:57 - Classifier metrics - Precision: 0.0385, Recall: 0.0102, F1: 0.0161
+2025-04-28 23:22:37 - fraudDetection - DEBUG - logger.py:15 - Starting execution of save_model
+2025-04-28 23:22:37 - fraudDetection - INFO - model_ops.py:35 - Saved classifier model to experts/fraud_classifier/models/classifier_model.pkl
+2025-04-28 23:22:37 - fraudDetection - DEBUG - logger.py:20 - Executed save_model in 0.0064 seconds
+2025-04-28 23:22:37 - fraudDetection - INFO - model_ops.py:127 - Saved fraud_classifier metrics to C:\Users\JV\fraud_detection_system\experts/fraud_classifier/evaluation\fraud_classifier_metrics.json
+2025-04-28 23:22:37 - fraudDetection - DEBUG - logger.py:20 - Executed train_classifier in 5.6968 seconds
+2025-04-28 23:22:37 - fraudDetection - INFO - main.py:100 - Fraud classifier training completed
+2025-04-28 23:22:37 - fraudDetection - DEBUG - logger.py:15 - Starting execution of train_anomaly_detector
+2025-04-28 23:22:37 - fraudDetection - INFO - training_pipeline.py:69 - Starting anomaly detector training
+2025-04-28 23:22:40 - fraudDetection - INFO - training_pipeline.py:77 - Loaded and processed default data
+2025-04-28 23:22:40 - fraudDetection - INFO - train.py:37 - Initialized anomaly detector trainer with contamination: 0.01
+2025-04-28 23:22:40 - fraudDetection - DEBUG - logger.py:15 - Starting execution of train
+2025-04-28 23:22:40 - fraudDetection - INFO - train.py:126 - Training IsolationForest anomaly detector on 284315 samples
+2025-04-28 23:22:40 - fraudDetection - DEBUG - logger.py:15 - Starting execution of preprocess
+2025-04-28 23:22:40 - fraudDetection - DEBUG - logger.py:20 - Executed preprocess in 0.4802 seconds
+2025-04-28 23:22:42 - fraudDetection - DEBUG - logger.py:20 - Executed train in 2.1465 seconds
+2025-04-28 23:22:42 - fraudDetection - DEBUG - logger.py:15 - Starting execution of preprocess
+2025-04-28 23:22:43 - fraudDetection - DEBUG - logger.py:20 - Executed preprocess in 0.4836 seconds
+2025-04-28 23:22:44 - fraudDetection - INFO - training_pipeline.py:109 - Anomaly detector metrics - Precision: 0.0761, Recall: 0.4736, F1: 0.1311
+2025-04-28 23:22:44 - fraudDetection - DEBUG - logger.py:15 - Starting execution of save_model
+2025-04-28 23:22:44 - fraudDetection - INFO - model_ops.py:35 - Saved anomaly model to experts/anomaly_detector/models/isolation_forest.pkl
+2025-04-28 23:22:44 - fraudDetection - DEBUG - logger.py:20 - Executed save_model in 0.1759 seconds
+2025-04-28 23:22:44 - fraudDetection - INFO - model_ops.py:127 - Saved anomaly_detector metrics to C:\Users\JV\fraud_detection_system\experts/anomaly_detector/evaluation\anomaly_detector_metrics.json
+2025-04-28 23:22:44 - fraudDetection - DEBUG - logger.py:20 - Executed train_anomaly_detector in 7.4590 seconds
+2025-04-28 23:22:44 - fraudDetection - INFO - main.py:105 - Anomaly detector training completed
+2025-04-28 23:22:44 - fraudDetection - INFO - main.py:111 - Training pipeline completed successfully

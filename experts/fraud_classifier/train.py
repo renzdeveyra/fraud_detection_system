@@ -26,7 +26,8 @@ class FraudClassifierTrainer:
         Args:
             params (dict, optional): Model hyperparameters. If None, loads from config.
         """
-        self.params = params or load_params('fraud_classifier')
+        all_params = load_params()
+        self.params = params or all_params.get('classifier', {})
         logger.info(f"Initialized fraud classifier trainer with params: {self.params}")
 
         # Define preprocessing steps
@@ -45,13 +46,17 @@ class FraudClassifierTrainer:
         """Initialize the classifier model based on configuration"""
         model_type = self.params.get('model_type', 'logistic_regression')
 
-        if model_type == 'logistic_regression':
+        if model_type.lower() in ['logistic_regression', 'logisticregression']:
+            # Get parameters from config
+            params_dict = self.params.get('params', {})
+
             self.model = LogisticRegression(
-                C=self.params.get('C', 1.0),
-                penalty=self.params.get('penalty', 'l2'),
-                class_weight=self.params.get('class_weight', 'balanced'),
-                random_state=self.params.get('random_state', 42),
-                max_iter=self.params.get('max_iter', 1000),
+                C=params_dict.get('C', 1.0),
+                penalty=params_dict.get('penalty', 'l2'),
+                class_weight=params_dict.get('class_weight', 'balanced'),
+                random_state=params_dict.get('random_state', 42),
+                max_iter=params_dict.get('max_iter', 1000),
+                solver=params_dict.get('solver', 'liblinear'),
                 n_jobs=-1
             )
         else:

@@ -30,7 +30,8 @@ class AnomalyDetectorTrainer:
             contamination (float): Expected proportion of anomalies in training data
             params (dict, optional): Model hyperparameters. If None, loads from config.
         """
-        self.params = params or load_params('anomaly_detector')
+        all_params = load_params()
+        self.params = params or all_params.get('anomaly', {})
         self.contamination = contamination or self.params.get('contamination', 0.01)
 
         logger.info(f"Initialized anomaly detector trainer with contamination: {self.contamination}")
@@ -50,16 +51,19 @@ class AnomalyDetectorTrainer:
         """Initialize the anomaly detection model based on configuration"""
         model_type = self.params.get('model_type', 'isolation_forest')
 
-        if model_type == 'isolation_forest':
+        if model_type.lower() in ['isolation_forest', 'isolationforest']:
+            # Get parameters from config
+            params_dict = self.params.get('params', {})
+
             self.model = IsolationForest(
                 contamination=self.contamination,
-                n_estimators=self.params.get('n_estimators', 100),
-                max_samples=self.params.get('max_samples', 'auto'),
-                max_features=self.params.get('max_features', 1.0),
-                random_state=self.params.get('random_state', 42),
+                n_estimators=params_dict.get('n_estimators', 100),
+                max_samples=params_dict.get('max_samples', 'auto'),
+                max_features=params_dict.get('max_features', 1.0),
+                random_state=params_dict.get('random_state', 42),
                 n_jobs=-1
             )
-        elif model_type == 'dbscan':
+        elif model_type.lower() == 'dbscan':
             self.model = DBSCAN(
                 eps=self.params.get('eps', 0.5),
                 min_samples=self.params.get('min_samples', 5),
