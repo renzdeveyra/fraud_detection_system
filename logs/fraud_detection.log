@@ -1,0 +1,82 @@
+2025-04-28 22:14:04 - fraudDetection - DEBUG - logger.py:15 - Starting execution of train_classifier
+2025-04-28 22:14:04 - fraudDetection - INFO - training_pipeline.py:27 - Starting fraud classifier training
+2025-04-28 22:14:04 - fraudDetection - ERROR - logger.py:25 - Failed executing train_classifier after 0.0000 seconds: [Errno 2] No such file or directory: 'C:\\Users\\renzd\\Desktop\\fraud_detection_system\\data/raw/creditcard.csv'
+2025-04-28 22:14:05 - fraudDetection - DEBUG - logger.py:26 - Traceback (most recent call last):
+  File "C:\Users\renzd\Desktop\fraud_detection_system\infrastructure\utils\logger.py", line 18, in wrapper
+    result = func(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\renzd\Desktop\fraud_detection_system\training_pipeline.py", line 34, in train_classifier
+    df = process_raw_data(save=True)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\renzd\Desktop\fraud_detection_system\infrastructure\utils\data_loader.py", line 22, in process_raw_data
+    df = load_raw_data()
+         ^^^^^^^^^^^^^^^
+  File "C:\Users\renzd\Desktop\fraud_detection_system\infrastructure\utils\data_loader.py", line 11, in load_raw_data
+    return pd.read_csv(data_path)
+           ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\renzd\AppData\Local\Programs\Python\Python311\Lib\site-packages\pandas\io\parsers\readers.py", line 1026, in read_csv
+    return _read(filepath_or_buffer, kwds)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\renzd\AppData\Local\Programs\Python\Python311\Lib\site-packages\pandas\io\parsers\readers.py", line 620, in _read
+    parser = TextFileReader(filepath_or_buffer, **kwds)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\renzd\AppData\Local\Programs\Python\Python311\Lib\site-packages\pandas\io\parsers\readers.py", line 1620, in __init__
+    self._engine = self._make_engine(f, self.engine)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\renzd\AppData\Local\Programs\Python\Python311\Lib\site-packages\pandas\io\parsers\readers.py", line 1880, in _make_engine
+    self.handles = get_handle(
+                   ^^^^^^^^^^^
+  File "C:\Users\renzd\AppData\Local\Programs\Python\Python311\Lib\site-packages\pandas\io\common.py", line 873, in get_handle
+    handle = open(
+             ^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: 'C:\\Users\\renzd\\Desktop\\fraud_detection_system\\data/raw/creditcard.csv'
+
+2025-04-28 22:15:10 - fraudDetection - DEBUG - logger.py:15 - Starting execution of train_classifier
+2025-04-28 22:15:10 - fraudDetection - INFO - training_pipeline.py:27 - Starting fraud classifier training
+2025-04-28 22:15:11 - fraudDetection - ERROR - logger.py:25 - Failed executing train_classifier after 1.5558 seconds: Unable to find a usable engine; tried using: 'pyarrow', 'fastparquet'.
+A suitable version of pyarrow or fastparquet is required for parquet support.
+Trying to import the above resulted in these errors:
+ - Missing optional dependency 'pyarrow'. pyarrow is required for parquet support. Use pip or conda to install pyarrow.
+ - Missing optional dependency 'fastparquet'. fastparquet is required for parquet support. Use pip or conda to install fastparquet.
+2025-04-28 22:15:11 - fraudDetection - DEBUG - logger.py:26 - Traceback (most recent call last):
+  File "C:\Users\renzd\Desktop\fraud_detection_system\infrastructure\utils\logger.py", line 18, in wrapper
+    result = func(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\renzd\Desktop\fraud_detection_system\training_pipeline.py", line 34, in train_classifier
+    df = process_raw_data(save=True)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\renzd\Desktop\fraud_detection_system\infrastructure\utils\data_loader.py", line 46, in process_raw_data
+    processed_df.to_parquet(output_path, index=False)
+  File "C:\Users\renzd\AppData\Local\Programs\Python\Python311\Lib\site-packages\pandas\util\_decorators.py", line 333, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\renzd\AppData\Local\Programs\Python\Python311\Lib\site-packages\pandas\core\frame.py", line 3113, in to_parquet
+    return to_parquet(
+           ^^^^^^^^^^^
+  File "C:\Users\renzd\AppData\Local\Programs\Python\Python311\Lib\site-packages\pandas\io\parquet.py", line 476, in to_parquet
+    impl = get_engine(engine)
+           ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\renzd\AppData\Local\Programs\Python\Python311\Lib\site-packages\pandas\io\parquet.py", line 67, in get_engine
+    raise ImportError(
+ImportError: Unable to find a usable engine; tried using: 'pyarrow', 'fastparquet'.
+A suitable version of pyarrow or fastparquet is required for parquet support.
+Trying to import the above resulted in these errors:
+ - Missing optional dependency 'pyarrow'. pyarrow is required for parquet support. Use pip or conda to install pyarrow.
+ - Missing optional dependency 'fastparquet'. fastparquet is required for parquet support. Use pip or conda to install fastparquet.
+
+2025-04-28 22:17:47 - fraudDetection - DEBUG - logger.py:15 - Starting execution of train_classifier
+2025-04-28 22:17:47 - fraudDetection - INFO - training_pipeline.py:27 - Starting fraud classifier training
+2025-04-28 22:17:50 - fraudDetection - INFO - training_pipeline.py:35 - Loaded and processed default data
+2025-04-28 22:17:50 - fraudDetection - ERROR - logger.py:25 - Failed executing train_classifier after 2.5242 seconds: load_params() takes 0 positional arguments but 1 was given
+2025-04-28 22:17:50 - fraudDetection - DEBUG - logger.py:26 - Traceback (most recent call last):
+  File "C:\Users\renzd\Desktop\fraud_detection_system\infrastructure\utils\logger.py", line 18, in wrapper
+    result = func(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\renzd\Desktop\fraud_detection_system\training_pipeline.py", line 41, in train_classifier
+    trainer = FraudClassifierTrainer()
+              ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\renzd\Desktop\fraud_detection_system\experts\fraud_classifier\train.py", line 29, in __init__
+    self.params = params or load_params('fraud_classifier')
+                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: load_params() takes 0 positional arguments but 1 was given
+
