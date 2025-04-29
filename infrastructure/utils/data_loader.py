@@ -59,9 +59,6 @@ def process_raw_data(save: bool = True) -> pd.DataFrame:
     # Ensure fraud label is properly formatted
     if 'fraud' in processed_df.columns:
         processed_df['fraud'] = processed_df['fraud'].astype(int)
-        # Rename to match existing code
-        if 'Class' not in processed_df.columns:
-            processed_df['Class'] = processed_df['fraud']
 
     if save:
         paths = load_paths()
@@ -75,7 +72,7 @@ def process_raw_data(save: bool = True) -> pd.DataFrame:
     return processed_df
 
 def split_data(df: pd.DataFrame,
-               target_col: str = 'Class',
+               target_col: str = 'fraud',
                test_size: float = 0.2,
                random_state: int = 42) -> Tuple[pd.DataFrame, pd.DataFrame, pd.Series, pd.Series]:
     """Split data into training and testing sets"""

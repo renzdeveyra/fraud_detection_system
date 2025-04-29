@@ -233,8 +233,19 @@ def handle_infer(args):
     # Process based on input method
     try:
         if args.transaction:
-            # Process single transaction from command line
-            transaction = json.loads(args.transaction)
+            # Process single transaction from command line or file
+            try:
+                # First try to parse as direct JSON
+                transaction = json.loads(args.transaction)
+            except json.JSONDecodeError:
+                # If that fails, try to load from file
+                try:
+                    with open(args.transaction, 'r') as f:
+                        transaction = json.load(f)
+                except Exception as e:
+                    logger.error(f"Failed to load transaction from file: {str(e)}")
+                    sys.exit(1)
+
             result = process_single_transaction(mediator, transaction)
             print(json.dumps(result, indent=2))
 
@@ -261,9 +272,174 @@ def handle_infer(args):
 
 def handle_evaluate(args):
     """Handle the evaluate command"""
-    logger.info(f"Model evaluation for {args.model} not implemented yet")
-    # This would be implemented to evaluate model performance
-    # on a test dataset
+    import pandas as pd
+    import numpy as np
+    from sklearn.metrics import precision_recall_fscore_support, confusion_matrix, classification_report
+    import pickle
+    import os
+    from infrastructure.config import get_project_root, load_paths
+    from infrastructure.utils import load_transaction_batch, split_data
+    from experts.fraud_classifier.train import FraudClassifierTrainer
+    from experts.anomaly_detector.train import AnomalyDetectorTrainer
+
+    logger.info(f"Starting model evaluation for {args.model}")
+
+    # Load data
+    if not args.data:
+        logger.error("No data file specified for evaluation")
+        sys.exit(1)
+
+    try:
+        df = load_transaction_batch(args.data)
+        logger.info(f"Loaded evaluation data from {args.data} with {len(df)} records")
+    except Exception as e:
+        logger.error(f"Failed to load evaluation data: {str(e)}")
+        sys.exit(1)
+
+    # Make sure we have the target column
+    if 'fraud' not in df.columns:
+        logger.error("Data must contain 'fraud' column for evaluation")
+        sys.exit(1)
+
+    # Split data for evaluation
+    X = df.drop(columns=['fraud'])
+    y = df['fraud']
+
+    # Load paths
+    paths = load_paths()
+
+    # Evaluate classifier
+    if args.model in ['classifier', 'both']:
+        logger.info("Evaluating fraud classifier model")
+
+        # Load classifier model
+        classifier_path = os.path.join(
+            get_project_root(),
+            paths.get('models', {}).get('classifier', {}).get('path', 'experts/fraud_classifier/models/classifier_model.pkl')
+        )
+
+        try:
+            with open(classifier_path, 'rb') as f:
+                classifier = pickle.load(f)
+
+            logger.info(f"Loaded classifier model from {classifier_path}")
+
+            # Initialize trainer for preprocessing
+            trainer = FraudClassifierTrainer()
+
+            # Preprocess data
+            X_processed = trainer.preprocess(X)
+
+            # Make predictions
+            y_pred = classifier.predict(X_processed)
+            y_prob = classifier.predict_proba(X_processed)[:, 1]
+
+            # Calculate metrics
+            precision, recall, f1, _ = precision_recall_fscore_support(y, y_pred, average='binary')
+            cm = confusion_matrix(y, y_pred)
+
+            # Print results
+            print("\n===== FRAUD CLASSIFIER EVALUATION =====")
+            print(f"Precision: {precision:.4f}")
+            print(f"Recall: {recall:.4f}")
+            print(f"F1 Score: {f1:.4f}")
+            print("\nConfusion Matrix:")
+            print(f"TN: {cm[0, 0]}, FP: {cm[0, 1]}")
+            print(f"FN: {cm[1, 0]}, TP: {cm[1, 1]}")
+
+            # Print classification report
+            print("\nClassification Report:")
+            print(classification_report(y, y_pred))
+
+            # Feature importance
+            if hasattr(classifier, 'coef_'):
+                print("\nFeature Importance:")
+                feature_names = X_processed.columns
+                coefficients = classifier.coef_[0]
+
+                # Sort by absolute importance
+                importance = pd.DataFrame({
+                    'Feature': feature_names,
+                    'Coefficient': coefficients,
+                    'Abs_Value': np.abs(coefficients)
+                }).sort_values('Abs_Value', ascending=False)
+
+                for _, row in importance.head(10).iterrows():
+                    print(f"  {row['Feature']}: {row['Coefficient']:.4f}")
+
+            logger.info("Classifier evaluation completed")
+
+        except Exception as e:
+            logger.error(f"Error evaluating classifier: {str(e)}")
+
+    # Evaluate anomaly detector
+    if args.model in ['anomaly', 'both']:
+        logger.info("Evaluating anomaly detector model")
+
+        # Load anomaly detector model
+        anomaly_path = os.path.join(
+            get_project_root(),
+            paths.get('models', {}).get('anomaly', {}).get('path', 'experts/anomaly_detector/models/isolation_forest.pkl')
+        )
+
+        try:
+            with open(anomaly_path, 'rb') as f:
+                detector = pickle.load(f)
+
+            logger.info(f"Loaded anomaly detector model from {anomaly_path}")
+
+            # Initialize trainer for preprocessing
+            trainer = AnomalyDetectorTrainer()
+
+            # Preprocess data
+            X_processed = trainer.preprocess(X)
+
+            # Make predictions
+            # For Isolation Forest, -1 is anomaly, 1 is normal
+            # Convert to 0 (normal) and 1 (anomaly/fraud)
+            raw_pred = detector.predict(X_processed)
+            y_pred = (raw_pred == -1).astype(int)
+
+            # Calculate metrics
+            precision, recall, f1, _ = precision_recall_fscore_support(y, y_pred, average='binary')
+            cm = confusion_matrix(y, y_pred)
+
+            # Print results
+            print("\n===== ANOMALY DETECTOR EVALUATION =====")
+            print(f"Precision: {precision:.4f}")
+            print(f"Recall: {recall:.4f}")
+            print(f"F1 Score: {f1:.4f}")
+            print("\nConfusion Matrix:")
+            print(f"TN: {cm[0, 0]}, FP: {cm[0, 1]}")
+            print(f"FN: {cm[1, 0]}, TP: {cm[1, 1]}")
+
+            # Print classification report
+            print("\nClassification Report:")
+            print(classification_report(y, y_pred))
+
+            # Get anomaly scores
+            if hasattr(detector, 'decision_function'):
+                scores = detector.decision_function(X_processed)
+
+                # Print score distribution
+                print("\nAnomaly Score Distribution:")
+                print(f"  Min: {scores.min():.4f}")
+                print(f"  Max: {scores.max():.4f}")
+                print(f"  Mean: {scores.mean():.4f}")
+                print(f"  Std Dev: {scores.std():.4f}")
+
+                # Print percentiles
+                percentiles = [1, 5, 10, 25, 50, 75, 90, 95, 99]
+                print("\nAnomaly Score Percentiles:")
+                for p in percentiles:
+                    print(f"  {p}%: {np.percentile(scores, p):.4f}")
+
+            logger.info("Anomaly detector evaluation completed")
+
+        except Exception as e:
+            logger.error(f"Error evaluating anomaly detector: {str(e)}")
+
+    logger.info("Model evaluation completed")
 
 
 def handle_config(args):

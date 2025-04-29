@@ -10,10 +10,26 @@ from typing import Dict, Any, List, Optional
 from infrastructure.config import load_params, load_paths, get_project_root
 from infrastructure.utils import logger
 from experts.anomaly_detector.thresholds.dynamic_adjustments import ThresholdAdjuster
+from experts.common.utils import (
+    extract_model_features,
+    check_model_compatibility,
+    calculate_heuristic_anomaly_score,
+    safe_predict,
+    get_model_version,
+    add_model_version,
+    ModelCache,
+    generate_cache_key
+)
 
 
 class AnomalyDetectorExpert:
-    """Expert system for anomaly detection"""
+    """
+    Expert system for anomaly detection.
+
+    Uses unsupervised learning to identify unusual transactions
+    that deviate from normal patterns, even if they don't match
+    known fraud patterns.
+    """
 
     def __init__(self, model, context):
         """
@@ -27,13 +43,21 @@ class AnomalyDetectorExpert:
         self.context = context
         self.params = load_params()['anomaly']
 
+        # Add version if not present
+        if not hasattr(self.model, 'version'):
+            add_model_version(self.model, f"anomaly_detector_v1")
+
         # Initialize threshold adjuster
         self.threshold_adjuster = ThresholdAdjuster()
 
         # Load thresholds
         self.thresholds = self.threshold_adjuster.thresholds
 
-        logger.info(f"Initialized anomaly detector expert with thresholds: {self.thresholds}")
+        # Initialize prediction cache
+        self.prediction_cache = ModelCache(max_size=1000)
+
+        logger.info(f"Initialized anomaly detector expert with model version: {get_model_version(self.model)}")
+        logger.info(f"Current thresholds: {self.thresholds}")
 
     def calculate_severity(self, score: float) -> str:
         """
@@ -60,33 +84,58 @@ class AnomalyDetectorExpert:
         """
         Full anomaly analysis of a transaction.
 
+        Applies unsupervised anomaly detection to identify unusual
+        transactions that deviate from normal patterns.
+
         Args:
-            transaction: Transaction data
+            transaction: Transaction data dictionary
 
         Returns:
-            Dict containing analysis results
+            Dictionary containing analysis results
         """
-        # Extract numeric features for the model
-        features = []
-        if hasattr(self.model, 'feature_names_in_'):
-            for feature in self.model.feature_names_in_:
-                if feature in transaction:
-                    features.append(transaction[feature])
-                else:
-                    features.append(0)  # Default value for missing features
+        # Check if we have this transaction in cache
+        transaction_id = transaction.get('id', '') or transaction.get('transaction_id', '')
+        cache_key = f"{transaction_id}_{get_model_version(self.model)}"
+        cached_result = self.prediction_cache.get(cache_key)
+
+        if cached_result:
+            raw_score = cached_result
+            logger.debug(f"Using cached anomaly score for transaction {transaction_id}")
         else:
-            # If model doesn't have feature names, extract all numeric values
-            features = [v for k, v in transaction.items()
-                       if isinstance(v, (int, float)) and k not in ['id', 'user_id']]
+            # Calculate a heuristic anomaly score as a fallback
+            heuristic_score = calculate_heuristic_anomaly_score(transaction)
 
-        # Get raw anomaly score
-        try:
-            raw_score = self.model.decision_function([features])[0]
-        except Exception as e:
-            logger.warning(f"Error in anomaly detection: {str(e)}")
-            raw_score = 0.0  # Default score
+            # Try to use the ML model if possible
+            try:
+                # Extract features for the model
+                features = extract_model_features(self.model, transaction)
 
-        # Determine severity
+                # Check model compatibility with available features
+                available_features = [k for k in transaction.keys()
+                                     if isinstance(transaction[k], (int, float))]
+                is_compatible, _ = check_model_compatibility(self.model, available_features)
+
+                if is_compatible:
+                    # Get raw anomaly score
+                    raw_score = safe_predict(
+                        self.model,
+                        features,
+                        fallback_value=heuristic_score
+                    )
+                else:
+                    # Use heuristic score if model is not compatible
+                    raw_score = heuristic_score
+
+                # Cache the result
+                if transaction_id:
+                    self.prediction_cache.set(cache_key, raw_score)
+
+            except Exception as e:
+                logger.warning(f"Error in anomaly detection: {str(e)}")
+                # Use the heuristic score as a fallback
+                raw_score = heuristic_score
+
+        # Determine severity based on thresholds
         severity = self.calculate_severity(raw_score)
 
         # Compare to cluster centroids (if available)
@@ -107,13 +156,18 @@ class AnomalyDetectorExpert:
             is_fraud=transaction.get('is_fraud', False)
         )
 
-        # Return analysis results
+        # Return comprehensive analysis results
         return {
             'raw_score': float(raw_score),
             'severity': severity,
             'cluster_deviation': float(cluster_distance),
-            'anomaly_score': float(anomaly_score)
+            'anomaly_score': float(anomaly_score),
+            'model_version': get_model_version(self.model),
+            'thresholds': {k: float(v) for k, v in self.thresholds.items()}
         }
+
+    # The _calculate_heuristic_score method has been moved to common/utils.py
+    # and is now imported as calculate_heuristic_anomaly_score
 
     def update_thresholds(self, auto_adjust: bool = True) -> Dict[str, float]:
         """

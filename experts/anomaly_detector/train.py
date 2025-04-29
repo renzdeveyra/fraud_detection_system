@@ -2,6 +2,15 @@
 """
 Training module for the Anomaly Detector expert system.
 Implements unsupervised learning for novel fraud pattern detection.
+
+Focuses on core dataset features:
+- distance_from_home
+- distance_from_last_transaction
+- ratio_to_median_purchase_price
+- repeat_retailer
+- used_chip
+- used_pin_number
+- online_order
 """
 
 import os
@@ -12,6 +21,8 @@ from sklearn.preprocessing import StandardScaler, RobustScaler
 from sklearn.ensemble import IsolationForest
 from sklearn.cluster import DBSCAN
 from sklearn.decomposition import PCA
+from sklearn.compose import ColumnTransformer
+from sklearn.pipeline import Pipeline
 import matplotlib.pyplot as plt
 import seaborn as sns
 
@@ -34,10 +45,45 @@ class AnomalyDetectorTrainer:
         self.params = params or all_params.get('anomaly', {})
         self.contamination = contamination or self.params.get('contamination', 0.01)
 
+        # Define core dataset features
+        self.core_features = [
+            'distance_from_home',
+            'distance_from_last_transaction',
+            'ratio_to_median_purchase_price',
+            'repeat_retailer',
+            'used_chip',
+            'used_pin_number',
+            'online_order'
+        ]
+
+        # Define feature types
+        self.numeric_features = [
+            'distance_from_home',
+            'distance_from_last_transaction',
+            'ratio_to_median_purchase_price'
+        ]
+
+        self.binary_features = [
+            'repeat_retailer',
+            'used_chip',
+            'used_pin_number',
+            'online_order'
+        ]
+
         logger.info(f"Initialized anomaly detector trainer with contamination: {self.contamination}")
+        logger.info(f"Using core features: {self.core_features}")
 
         # Define preprocessing components
         self.scaler = RobustScaler()  # Less sensitive to outliers than StandardScaler
+
+        # Setup preprocessing pipeline
+        self.preprocessor = ColumnTransformer(
+            transformers=[
+                ('num', RobustScaler(), self.numeric_features),
+                ('bin', 'passthrough', self.binary_features)
+            ],
+            remainder='drop'  # Drop any columns not specified
+        )
 
         # For dimensionality reduction (optional)
         self.pca = None
@@ -77,6 +123,11 @@ class AnomalyDetectorTrainer:
         """
         Preprocess data for model training or inference.
 
+        Focuses on core dataset features and applies appropriate transformations:
+        - Log transformation for distance features
+        - Robust scaling for numeric features
+        - Pass-through for binary features
+
         Args:
             X (DataFrame): Features
 
@@ -87,21 +138,53 @@ class AnomalyDetectorTrainer:
         X_copy = X.copy()
 
         # Drop target column if present
-        if 'Class' in X_copy.columns:
-            X_copy = X_copy.drop('Class', axis=1)
+        if 'fraud' in X_copy.columns:
+            X_copy = X_copy.drop('fraud', axis=1)
 
-        # Extract features to use - exclude non-predictive columns
-        exclude_cols = self.params.get('exclude_cols', [])
-        feature_cols = [col for col in X_copy.columns if col not in exclude_cols]
-        features = X_copy[feature_cols]
+        # Ensure all core features exist, fill missing ones with defaults
+        for feature in self.core_features:
+            if feature not in X_copy.columns:
+                if feature in self.binary_features:
+                    X_copy[feature] = 0  # Default for binary features
+                else:
+                    X_copy[feature] = 0.0  # Default for numeric features
+                logger.warning(f"Feature {feature} not found in input data, using default value")
 
-        # Scale numeric features
-        X_scaled = self.scaler.fit_transform(features)
-        X_processed = pd.DataFrame(X_scaled, columns=feature_cols)
+        # Create log-transformed distance features
+        if 'distance_from_home' in X_copy.columns:
+            X_copy['log_distance_from_home'] = np.log1p(X_copy['distance_from_home'])
+
+        if 'distance_from_last_transaction' in X_copy.columns:
+            X_copy['log_distance_from_last_transaction'] = np.log1p(X_copy['distance_from_last_transaction'])
+
+        # Add log-transformed features to numeric features list
+        numeric_features_with_log = self.numeric_features + ['log_distance_from_home', 'log_distance_from_last_transaction']
+
+        # Update preprocessor with log-transformed features
+        self.preprocessor = ColumnTransformer(
+            transformers=[
+                ('num', RobustScaler(), numeric_features_with_log),
+                ('bin', 'passthrough', self.binary_features)
+            ],
+            remainder='drop'  # Drop any columns not specified
+        )
+
+        # Apply preprocessing
+        X_processed_array = self.preprocessor.fit_transform(X_copy)
+
+        # Create DataFrame with appropriate column names
+        processed_columns = (
+            numeric_features_with_log +  # Scaled numeric features
+            self.binary_features  # Passthrough binary features
+        )
+        X_processed = pd.DataFrame(X_processed_array, columns=processed_columns)
+
+        # Store feature names for the model
+        self.feature_names = processed_columns
 
         # Apply dimensionality reduction if configured
         if self.pca is not None:
-            X_pca = self.pca.fit_transform(X_scaled)
+            X_pca = self.pca.fit_transform(X_processed)
             pca_cols = [f'PC{i + 1}' for i in range(X_pca.shape[1])]
             X_processed = pd.DataFrame(X_pca, columns=pca_cols)
 
@@ -109,12 +192,15 @@ class AnomalyDetectorTrainer:
             explained_var = self.pca.explained_variance_ratio_.sum()
             logger.info(f"PCA with {len(pca_cols)} components explains {explained_var:.2%} of variance")
 
+            # Store PCA feature names
+            self.feature_names = pca_cols
+
         return X_processed
 
     @log_execution_time
     def train(self, X):
         """
-        Train the anomaly detector.
+        Train the anomaly detector on core dataset features.
 
         Args:
             X (DataFrame): Training data (should contain only legitimate transactions)
@@ -124,6 +210,7 @@ class AnomalyDetectorTrainer:
         """
         model_type = self.params.get('model_type', 'isolation_forest')
         logger.info(f"Training {model_type} anomaly detector on {len(X)} samples")
+        logger.info(f"Using core features: {self.core_features}")
 
         # Preprocess data
         X_train = self.preprocess(X)
@@ -131,15 +218,26 @@ class AnomalyDetectorTrainer:
         # Train model
         self.model.fit(X_train)
 
+        # Store feature names in the model for later use
+        self.model.feature_names_in_ = np.array(self.feature_names)
+
+        # Add version information
+        self.model.version = "anomaly_detector_v2"
+
         # For Isolation Forest, learn decision function thresholds
         if model_type == 'isolation_forest':
             self._learn_thresholds(X_train)
+
+        # Log model information
+        logger.info(f"Model trained successfully with {len(self.model.feature_names_in_)} features")
+        logger.info(f"Model version: {self.model.version}")
 
         return self.model
 
     def _learn_thresholds(self, X_train):
         """
         Learn decision function thresholds for different severity levels.
+        Customized for core dataset features.
 
         Args:
             X_train (DataFrame): Preprocessed training data
@@ -148,15 +246,32 @@ class AnomalyDetectorTrainer:
         scores = self.model.decision_function(X_train)
 
         # Calculate thresholds for different severity levels
+        # Adjusted percentiles for better sensitivity with core features
         self.thresholds = {
-            'LOW': np.percentile(scores, 10),
-            'MEDIUM': np.percentile(scores, 5),
-            'HIGH': np.percentile(scores, 1),
-            'CRITICAL': np.percentile(scores, 0.1)
+            'LOW': np.percentile(scores, 15),  # More sensitive for low anomalies
+            'MEDIUM': np.percentile(scores, 7.5),
+            'HIGH': np.percentile(scores, 2.5),
+            'CRITICAL': np.percentile(scores, 0.5)  # More sensitive for critical anomalies
         }
 
         # Log thresholds
         logger.info(f"Learned anomaly thresholds: {self.thresholds}")
+
+        # Add metadata about the thresholds
+        threshold_metadata = {
+            "thresholds": {k: float(v) for k, v in self.thresholds.items()},
+            "model_version": "anomaly_detector_v2",
+            "features_used": self.feature_names.tolist(),
+            "percentiles": {
+                "LOW": 15,
+                "MEDIUM": 7.5,
+                "HIGH": 2.5,
+                "CRITICAL": 0.5
+            },
+            "core_features": self.core_features,
+            "training_samples": len(X_train),
+            "created_at": pd.Timestamp.now().isoformat()
+        }
 
         # Save thresholds to file
         thresholds_file = os.path.join(
@@ -166,7 +281,7 @@ class AnomalyDetectorTrainer:
 
         os.makedirs(os.path.dirname(thresholds_file), exist_ok=True)
         with open(thresholds_file, 'w') as f:
-            json.dump({k: float(v) for k, v in self.thresholds.items()}, f, indent=2)
+            json.dump(threshold_metadata, f, indent=2)
 
         logger.info(f"Saved thresholds to {thresholds_file}")
 

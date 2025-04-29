@@ -2,6 +2,16 @@
 """
 Training module for the Fraud Classifier expert system.
 Implements supervised learning for known fraud pattern detection.
+
+Focuses on core dataset features:
+- distance_from_home
+- distance_from_last_transaction
+- ratio_to_median_purchase_price
+- repeat_retailer
+- used_chip
+- used_pin_number
+- online_order
+- fraud (target)
 """
 
 import os
@@ -11,6 +21,8 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LogisticRegression
 from sklearn.model_selection import GridSearchCV
 from imblearn.over_sampling import SMOTE
+from sklearn.compose import ColumnTransformer
+from sklearn.pipeline import Pipeline
 
 from infrastructure.utils import logger, log_execution_time
 from infrastructure.config import load_params
@@ -28,10 +40,46 @@ class FraudClassifierTrainer:
         """
         all_params = load_params()
         self.params = params or all_params.get('classifier', {})
-        logger.info(f"Initialized fraud classifier trainer with params: {self.params}")
+
+        # Define core dataset features
+        self.core_features = [
+            'distance_from_home',
+            'distance_from_last_transaction',
+            'ratio_to_median_purchase_price',
+            'repeat_retailer',
+            'used_chip',
+            'used_pin_number',
+            'online_order'
+        ]
+
+        # Define feature types
+        self.numeric_features = [
+            'distance_from_home',
+            'distance_from_last_transaction',
+            'ratio_to_median_purchase_price'
+        ]
+
+        self.binary_features = [
+            'repeat_retailer',
+            'used_chip',
+            'used_pin_number',
+            'online_order'
+        ]
+
+        logger.info(f"Initialized fraud classifier trainer with core features: {self.core_features}")
+        logger.info(f"Parameters: {self.params}")
 
         # Define preprocessing steps
         self.scaler = StandardScaler()
+
+        # Setup preprocessing pipeline
+        self.preprocessor = ColumnTransformer(
+            transformers=[
+                ('num', StandardScaler(), self.numeric_features),
+                ('bin', 'passthrough', self.binary_features)
+            ],
+            remainder='drop'  # Drop any columns not specified
+        )
 
         # Setup SMOTE for handling class imbalance
         self.smote = SMOTE(
@@ -67,6 +115,11 @@ class FraudClassifierTrainer:
         """
         Preprocess data for model training or inference.
 
+        Focuses on core dataset features and applies appropriate transformations:
+        - Log transformation for distance features
+        - Scaling for numeric features
+        - Pass-through for binary features
+
         Args:
             X (DataFrame): Features
             y (Series, optional): Target variable, required for training
@@ -78,13 +131,46 @@ class FraudClassifierTrainer:
         # Make a copy to avoid modifying original data
         X_copy = X.copy()
 
-        # Extract features to use - exclude non-predictive columns
-        feature_cols = self.params.get('feature_cols', X_copy.columns)
-        features = X_copy[feature_cols]
+        # Ensure all core features exist, fill missing ones with defaults
+        for feature in self.core_features:
+            if feature not in X_copy.columns:
+                if feature in self.binary_features:
+                    X_copy[feature] = 0  # Default for binary features
+                else:
+                    X_copy[feature] = 0.0  # Default for numeric features
+                logger.warning(f"Feature {feature} not found in input data, using default value")
 
-        # Scale numeric features
-        X_scaled = self.scaler.fit_transform(features)
-        X_processed = pd.DataFrame(X_scaled, columns=feature_cols)
+        # Create log-transformed distance features
+        if 'distance_from_home' in X_copy.columns:
+            X_copy['log_distance_from_home'] = np.log1p(X_copy['distance_from_home'])
+
+        if 'distance_from_last_transaction' in X_copy.columns:
+            X_copy['log_distance_from_last_transaction'] = np.log1p(X_copy['distance_from_last_transaction'])
+
+        # Add log-transformed features to numeric features list
+        numeric_features_with_log = self.numeric_features + ['log_distance_from_home', 'log_distance_from_last_transaction']
+
+        # Update preprocessor with log-transformed features
+        self.preprocessor = ColumnTransformer(
+            transformers=[
+                ('num', StandardScaler(), numeric_features_with_log),
+                ('bin', 'passthrough', self.binary_features)
+            ],
+            remainder='drop'  # Drop any columns not specified
+        )
+
+        # Apply preprocessing
+        X_processed_array = self.preprocessor.fit_transform(X_copy)
+
+        # Create DataFrame with appropriate column names
+        processed_columns = (
+            numeric_features_with_log +  # Scaled numeric features
+            self.binary_features  # Passthrough binary features
+        )
+        X_processed = pd.DataFrame(X_processed_array, columns=processed_columns)
+
+        # Store feature names for the model
+        self.feature_names = processed_columns
 
         # Apply SMOTE for class imbalance if we have labels
         if y is not None:
@@ -97,7 +183,7 @@ class FraudClassifierTrainer:
     @log_execution_time
     def train(self, X, y, optimize=False):
         """
-        Train the fraud classifier.
+        Train the fraud classifier on core dataset features.
 
         Args:
             X (DataFrame): Features
@@ -108,6 +194,7 @@ class FraudClassifierTrainer:
             model: Trained classifier model
         """
         logger.info(f"Training fraud classifier on {len(X)} samples ({sum(y)} fraud instances)")
+        logger.info(f"Using core features: {self.core_features}")
 
         # Preprocess data
         X_train, y_train = self.preprocess(X, y)
@@ -132,8 +219,18 @@ class FraudClassifierTrainer:
             # Train model with current parameters
             self.model.fit(X_train, y_train)
 
+        # Store feature names in the model for later use
+        self.model.feature_names_in_ = np.array(self.feature_names)
+
+        # Add version information
+        self.model.version = "fraud_classifier_v2"
+
         # Extract feature importance
         self._analyze_feature_importance(X_train.columns)
+
+        # Log model information
+        logger.info(f"Model trained successfully with {len(self.model.feature_names_in_)} features")
+        logger.info(f"Model version: {self.model.version}")
 
         return self.model
 
@@ -193,9 +290,10 @@ class FraudClassifierTrainer:
         proba = self.model.predict_proba(X_processed)
         return proba[:, 1]  # Return probability of class 1 (fraud)
 
-    def suggest_rules(self, threshold=0.5):
+    def suggest_rules(self, threshold=0.3):
         """
         Generate rule suggestions based on model coefficients.
+        Customized for core dataset features with specific thresholds.
 
         Args:
             threshold (float): Coefficient magnitude threshold for suggesting rules
@@ -210,26 +308,93 @@ class FraudClassifierTrainer:
         # Filter features with significant coefficients
         significant = self.feature_importance[
             self.feature_importance['Abs_Value'] > threshold
-            ]
+        ]
 
         rule_suggestions = {}
+
+        # Define default thresholds for core features
+        default_thresholds = {
+            'distance_from_home': 100,
+            'log_distance_from_home': 4.6,  # log(100)
+            'distance_from_last_transaction': 50,
+            'log_distance_from_last_transaction': 3.9,  # log(50)
+            'ratio_to_median_purchase_price': 3.0,
+            'repeat_retailer': 0,  # Binary feature
+            'used_chip': 0,  # Binary feature
+            'used_pin_number': 0,  # Binary feature
+            'online_order': 1  # Binary feature
+        }
+
         for _, row in significant.iterrows():
             feature = row['Feature']
             coef = row['Coefficient']
 
+            # Check if this is a binary feature
+            is_binary = feature in self.binary_features
+
             # Positive coefficients indicate fraud signals
             if coef > 0:
-                rule_suggestions[feature] = {
-                    'direction': 'high',
-                    'coefficient': float(coef),
-                    'suggested_threshold': 'upper_percentile_95'
-                }
+                if is_binary:
+                    # For binary features with positive coefficients
+                    if feature == 'online_order':
+                        # online_order=1 indicates fraud
+                        suggested_value = 1
+                    else:
+                        # For other binary features, 0 typically indicates fraud
+                        suggested_value = 0
+
+                    rule_suggestions[feature] = {
+                        'direction': 'equals',
+                        'coefficient': float(coef),
+                        'suggested_value': suggested_value,
+                        'rule_type': 'binary'
+                    }
+                else:
+                    # For numeric features with positive coefficients
+                    # Higher values indicate fraud
+                    rule_suggestions[feature] = {
+                        'direction': 'high',
+                        'coefficient': float(coef),
+                        'suggested_threshold': default_thresholds.get(feature, 'upper_percentile_95'),
+                        'rule_type': 'numeric'
+                    }
             else:
-                rule_suggestions[feature] = {
-                    'direction': 'low',
-                    'coefficient': float(coef),
-                    'suggested_threshold': 'lower_percentile_5'
-                }
+                if is_binary:
+                    # For binary features with negative coefficients
+                    if feature == 'online_order':
+                        # online_order=0 indicates legitimate
+                        suggested_value = 0
+                    else:
+                        # For other binary features, 1 typically indicates legitimate
+                        suggested_value = 1
+
+                    rule_suggestions[feature] = {
+                        'direction': 'equals',
+                        'coefficient': float(coef),
+                        'suggested_value': suggested_value,
+                        'rule_type': 'binary'
+                    }
+                else:
+                    # For numeric features with negative coefficients
+                    # Lower values indicate fraud
+                    rule_suggestions[feature] = {
+                        'direction': 'low',
+                        'coefficient': float(coef),
+                        'suggested_threshold': default_thresholds.get(feature, 'lower_percentile_5'),
+                        'rule_type': 'numeric'
+                    }
+
+        # Add specific rule combinations
+        if 'used_chip' in rule_suggestions and 'used_pin_number' in rule_suggestions:
+            rule_suggestions['payment_method_combination'] = {
+                'description': 'Both chip and PIN not used',
+                'features': ['used_chip', 'used_pin_number'],
+                'condition': 'both_equal_zero',
+                'rule_type': 'combination'
+            }
+
+        # Log rule suggestions
+        logger.info(f"Generated {len(rule_suggestions)} rule suggestions based on model coefficients")
 
         return rule_suggestions
 

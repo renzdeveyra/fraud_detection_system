@@ -6,12 +6,12 @@ priority_rules:
     condition: "classifier.confidence > 0.9"
     action: "BLOCK"
     description: "Block when classifier has high confidence"
-    
+
   - name: "critical_anomaly"
     condition: "anomaly.severity == 'CRITICAL'"
     action: "BLOCK"
     description: "Block when anomaly detector finds critical anomaly"
-    
+
   - name: "known_fraud_pattern"
     condition: "context.matches_recent_fraud == true"
     action: "BLOCK"
@@ -24,16 +24,16 @@ weighted_rules:
     anomaly_weight: 0.3
     threshold_review: 0.5
     threshold_block: 0.8
-  
-  # Special case for new users
-  new_user:
-    classifier_weight: 0.5
-    anomaly_weight: 0.5
+
+  # Special case for transactions with unusual distance
+  unusual_distance:
+    classifier_weight: 0.6
+    anomaly_weight: 0.4
     threshold_review: 0.4
     threshold_block: 0.7
-    
-  # Special case for high-value transactions
-  high_value:
+
+  # Special case for transactions with unusual payment methods
+  unusual_payment:
     classifier_weight: 0.6
     anomaly_weight: 0.4
     threshold_review: 0.4
@@ -45,35 +45,50 @@ agreement_rules:
     condition: "classifier.risk == 'HIGH' and anomaly.severity in ['HIGH', 'CRITICAL']"
     action: "BLOCK"
     description: "Block when both experts indicate high risk"
-    
+
   - name: "both_medium_risk"
     condition: "classifier.risk == 'MEDIUM' and anomaly.severity == 'MEDIUM'"
     action: "REVIEW"
     description: "Review when both experts indicate medium risk"
-    
+
   - name: "both_low_risk"
     condition: "classifier.risk == 'LOW' and anomaly.severity in ['LOW', 'NORMAL']"
     action: "ALLOW"
     description: "Allow when both experts indicate low risk"
-    
+
   - name: "major_disagreement"
     condition: "classifier.risk == 'HIGH' and anomaly.severity == 'NORMAL' or classifier.risk == 'LOW' and anomaly.severity == 'CRITICAL'"
     action: "REVIEW"
     description: "Review when experts strongly disagree"
 
-# Context-based rules
+# Context-based rules focused on core dataset features
 context_rules:
-  - name: "unusual_location"
-    condition: "context.user_typical_country == false"
+  - name: "unusual_distance_home"
+    condition: "context.distance_from_home_unusual == true"
     action: "REVIEW"
-    description: "Review when transaction is from unusual location"
-    
-  - name: "velocity_check"
-    condition: "context.transaction_velocity > 3"
+    description: "Review when distance from home is unusual"
+
+  - name: "unusual_distance_last_transaction"
+    condition: "context.distance_from_last_transaction_unusual == true"
     action: "REVIEW"
-    description: "Review when user has high transaction velocity"
-    
-  - name: "amount_spike"
-    condition: "context.amount_ratio_to_average > 5"
+    description: "Review when distance from last transaction is unusual"
+
+  - name: "unusual_purchase_ratio"
+    condition: "context.purchase_price_ratio_unusual == true"
     action: "REVIEW"
-    description: "Review when transaction amount is much higher than user average"
+    description: "Review when purchase price ratio is unusual"
+
+  - name: "unusual_payment_method"
+    condition: "context.payment_method_unusual == true"
+    action: "REVIEW"
+    description: "Review when payment method is unusual"
+
+  - name: "new_retailer"
+    condition: "context.is_new_retailer == true"
+    action: "REVIEW"
+    description: "Review when transaction is with a new retailer"
+
+  - name: "matches_fraud_pattern"
+    condition: "context.matches_recent_fraud == true"
+    action: "BLOCK"
+    description: "Block when transaction matches recent fraud pattern"
