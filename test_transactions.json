@@ -1,0 +1,50 @@
+[
+  {
+    "id": "test456",
+    "amount": 8000,
+    "merchant": "Online Casino",
+    "merchant_category": "gambling",
+    "country": "XX",
+    "hour_of_day": 3,
+    "user_id": "user456",
+    "distance_from_home": 150,
+    "distance_from_last_transaction": 120,
+    "ratio_to_median_purchase_price": 5.2,
+    "repeat_retailer": 0,
+    "used_chip": 0,
+    "used_pin_number": 0,
+    "online_order": 1
+  },
+  {
+    "id": "test789",
+    "amount": 100,
+    "merchant": "Local Store",
+    "merchant_category": "retail",
+    "country": "US",
+    "hour_of_day": 14,
+    "user_id": "user789",
+    "distance_from_home": 5,
+    "distance_from_last_transaction": 2,
+    "ratio_to_median_purchase_price": 0.8,
+    "repeat_retailer": 1,
+    "used_chip": 1,
+    "used_pin_number": 1,
+    "online_order": 0
+  },
+  {
+    "id": "test101",
+    "amount": 2500,
+    "merchant": "Electronics Store",
+    "merchant_category": "electronics",
+    "country": "US",
+    "hour_of_day": 16,
+    "user_id": "user101",
+    "distance_from_home": 25,
+    "distance_from_last_transaction": 80,
+    "ratio_to_median_purchase_price": 3.5,
+    "repeat_retailer": 0,
+    "used_chip": 1,
+    "used_pin_number": 0,
+    "online_order": 0
+  }
+]

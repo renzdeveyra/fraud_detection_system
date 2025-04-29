@@ -258,8 +258,12 @@ def add_transaction(transaction: Dict[str, Any]) -> bool:
         cursor.execute('''
         INSERT INTO user_transactions (
             transaction_id, user_id, amount, merchant,
-            merchant_category, country, timestamp, is_fraud
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            merchant_category, country, timestamp,
+            distance_from_home, distance_from_last_transaction,
+            ratio_to_median_purchase_price, repeat_retailer,
+            used_chip, used_pin_number, online_order,
+            is_fraud
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ''', (
             transaction['transaction_id'],
             transaction['user_id'],
@@ -268,6 +272,13 @@ def add_transaction(transaction: Dict[str, Any]) -> bool:
             transaction.get('merchant_category', ''),
             transaction.get('country', ''),
             transaction.get('timestamp', datetime.now().isoformat()),
+            transaction.get('distance_from_home', 0),
+            transaction.get('distance_from_last_transaction', 0),
+            transaction.get('ratio_to_median_purchase_price', 1.0),
+            transaction.get('repeat_retailer', 0),
+            transaction.get('used_chip', 1),
+            transaction.get('used_pin_number', 1),
+            transaction.get('online_order', 0),
             transaction.get('is_fraud', 0)
         ))
 
@@ -487,7 +498,14 @@ def add_fraud(transaction: Dict[str, Any], classifier_score: float,
                 "merchant_category": transaction.get('merchant_category', ''),
                 "country": transaction.get('country', ''),
                 "hour_of_day": transaction.get('hour_of_day', 0),
-                "velocity": transaction.get('velocity', 0)
+                "velocity": transaction.get('velocity', 0),
+                "distance_from_home": transaction.get('distance_from_home', 0),
+                "distance_from_last_transaction": transaction.get('distance_from_last_transaction', 0),
+                "ratio_to_median_purchase_price": transaction.get('ratio_to_median_purchase_price', 1.0),
+                "repeat_retailer": transaction.get('repeat_retailer', 0),
+                "used_chip": transaction.get('used_chip', 1),
+                "used_pin_number": transaction.get('used_pin_number', 1),
+                "online_order": transaction.get('online_order', 0)
             },
             "classifier_score": classifier_score,
             "anomaly_score": anomaly_score,
@@ -545,6 +563,10 @@ def check_transaction_context(transaction: Dict[str, Any]) -> Dict[str, Any]:
         'amount_ratio_to_max': 1.0,
         'user_typical_country': True,
         'transaction_velocity': 0,
+        'distance_from_home_unusual': False,
+        'distance_from_last_transaction_unusual': False,
+        'purchase_price_ratio_unusual': False,
+        'payment_method_unusual': False,
         'matches_recent_fraud': False
     }
 
@@ -565,6 +587,43 @@ def check_transaction_context(transaction: Dict[str, Any]) -> Dict[str, Any]:
         # Check velocity
         if 'velocity' in profile and '1h' in profile['velocity']:
             context['transaction_velocity'] = profile['velocity']['1h']['transaction_count']
+
+        # Check distance from home
+        if 'distance_from_home' in transaction and 'avg_distance_from_home' in profile:
+            avg_distance = profile['avg_distance_from_home']
+            if avg_distance > 0 and transaction['distance_from_home'] > avg_distance * 3:
+                context['distance_from_home_unusual'] = True
+
+        # Check distance from last transaction
+        if 'distance_from_last_transaction' in transaction and 'avg_distance_from_last_transaction' in profile:
+            avg_distance = profile['avg_distance_from_last_transaction']
+            if avg_distance > 0 and transaction['distance_from_last_transaction'] > avg_distance * 3:
+                context['distance_from_last_transaction_unusual'] = True
+
+        # Check purchase price ratio
+        if 'ratio_to_median_purchase_price' in transaction and 'median_purchase_price' in profile:
+            if profile['median_purchase_price'] > 0 and transaction['ratio_to_median_purchase_price'] > 3.0:
+                context['purchase_price_ratio_unusual'] = True
+
+        # Check payment methods
+        payment_unusual = False
+
+        # Check if chip usage is unusual for this user
+        if 'used_chip' in transaction and 'pct_used_chip' in profile:
+            if profile['pct_used_chip'] > 0.8 and transaction['used_chip'] == 0:
+                payment_unusual = True
+
+        # Check if PIN usage is unusual for this user
+        if 'used_pin_number' in transaction and 'pct_used_pin' in profile:
+            if profile['pct_used_pin'] > 0.8 and transaction['used_pin_number'] == 0:
+                payment_unusual = True
+
+        # Check if online order is unusual for this user
+        if 'online_order' in transaction and 'pct_online_orders' in profile:
+            if profile['pct_online_orders'] < 0.2 and transaction['online_order'] == 1:
+                payment_unusual = True
+
+        context['payment_method_unusual'] = payment_unusual
 
     # Check against recent frauds
     recent_frauds = get_recent_frauds()
@@ -596,6 +655,31 @@ def check_transaction_context(transaction: Dict[str, Any]) -> Dict[str, Any]:
             total_checks += 1
             if abs(transaction['hour_of_day'] - fraud['features']['hour_of_day']) <= 1:
                 similarity += 1
+
+        # Check distance from home
+        if 'distance_from_home' in transaction and 'distance_from_home' in fraud['features']:
+            total_checks += 1
+            if abs(transaction['distance_from_home'] - fraud['features']['distance_from_home']) < 20:
+                similarity += 1
+
+        # Check distance from last transaction
+        if 'distance_from_last_transaction' in transaction and 'distance_from_last_transaction' in fraud['features']:
+            total_checks += 1
+            if abs(transaction['distance_from_last_transaction'] - fraud['features']['distance_from_last_transaction']) < 10:
+                similarity += 1
+
+        # Check ratio to median purchase price
+        if 'ratio_to_median_purchase_price' in transaction and 'ratio_to_median_purchase_price' in fraud['features']:
+            total_checks += 1
+            if abs(transaction['ratio_to_median_purchase_price'] - fraud['features']['ratio_to_median_purchase_price']) < 0.5:
+                similarity += 1
+
+        # Check payment methods
+        for payment_feature in ['used_chip', 'used_pin_number', 'online_order']:
+            if payment_feature in transaction and payment_feature in fraud['features']:
+                total_checks += 1
+                if transaction[payment_feature] == fraud['features'][payment_feature]:
+                    similarity += 1
 
         # Calculate similarity score
         if total_checks > 0:

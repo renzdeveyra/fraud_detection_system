@@ -32,6 +32,33 @@ class FraudClassifierExpert:
             hour <= self.rules.get('time_rules', {}).get('unusual_hour_end', 5)):
             violations += 1
 
+        # Rule 5: High distance from home
+        if transaction.get('distance_from_home', 0) > self.rules.get('location_rules', {}).get('high_distance_from_home', 100):
+            violations += 1
+
+        # Rule 6: High distance from last transaction
+        if transaction.get('distance_from_last_transaction', 0) > self.rules.get('location_rules', {}).get('high_distance_from_last_transaction', 50):
+            violations += 1
+
+        # Rule 7: Unusual ratio to median purchase price
+        if transaction.get('ratio_to_median_purchase_price', 1.0) > self.rules.get('transaction_rules', {}).get('high_ratio_to_median_threshold', 3.0):
+            violations += 1
+
+        # Rule 8: Suspicious payment methods
+        suspicious_methods = self.rules.get('transaction_rules', {}).get('suspicious_payment_methods', {})
+
+        # Check for no chip usage when expected
+        if suspicious_methods.get('no_chip', False) and transaction.get('used_chip', 1) == 0:
+            violations += 1
+
+        # Check for no PIN usage when expected
+        if suspicious_methods.get('no_pin', False) and transaction.get('used_pin_number', 1) == 0:
+            violations += 1
+
+        # Check for online order (potentially higher risk)
+        if suspicious_methods.get('online_order', False) and transaction.get('online_order', 0) == 1:
+            violations += 1
+
         return violations
 
     def evaluate(self, transaction: Dict) -> Dict:

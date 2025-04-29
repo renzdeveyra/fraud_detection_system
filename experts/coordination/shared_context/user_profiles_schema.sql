@@ -9,6 +9,13 @@ CREATE TABLE user_profiles (
     avg_transaction_interval REAL DEFAULT 0,
     typical_merchants TEXT,  -- JSON array of common merchants
     last_countries TEXT,     -- JSON array of recent countries
+    avg_distance_from_home REAL DEFAULT 0,
+    avg_distance_from_last_transaction REAL DEFAULT 0,
+    median_purchase_price REAL DEFAULT 0,
+    pct_repeat_retailer REAL DEFAULT 0,
+    pct_used_chip REAL DEFAULT 0,
+    pct_used_pin REAL DEFAULT 0,
+    pct_online_orders REAL DEFAULT 0,
     risk_score REAL DEFAULT 0,
     account_age_days INTEGER DEFAULT 0,
     last_transaction_date TEXT,
@@ -25,6 +32,13 @@ CREATE TABLE user_transactions (
     merchant_category TEXT,
     country TEXT,
     timestamp TEXT NOT NULL,
+    distance_from_home REAL DEFAULT 0,
+    distance_from_last_transaction REAL DEFAULT 0,
+    ratio_to_median_purchase_price REAL DEFAULT 1.0,
+    repeat_retailer INTEGER DEFAULT 0,
+    used_chip INTEGER DEFAULT 0,
+    used_pin_number INTEGER DEFAULT 0,
+    online_order INTEGER DEFAULT 0,
     is_fraud INTEGER DEFAULT 0,
     FOREIGN KEY (user_id) REFERENCES user_profiles(user_id)
 );

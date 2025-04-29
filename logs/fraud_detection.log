@@ -508,3 +508,197 @@ AttributeError: 'NoneType' object has no attribute 'update'
 2025-04-29 01:06:41 - fraudDetection - DEBUG - logger.py:20 - Executed process_single_transaction in 0.0102 seconds
 2025-04-29 01:06:41 - fraudDetection - INFO - main.py:259 - Inference pipeline completed successfully
 2025-04-29 01:09:37 - fraudDetection - INFO - main.py:264 - Model evaluation for both not implemented yet
+2025-04-29 21:44:11 - fraudDetection - INFO - main.py:198 - Starting training pipeline
+2025-04-29 21:44:11 - fraudDetection - DEBUG - logger.py:15 - Starting execution of train_classifier
+2025-04-29 21:44:11 - fraudDetection - INFO - training_pipeline.py:27 - Starting fraud classifier training
+2025-04-29 21:44:13 - fraudDetection - INFO - training_pipeline.py:35 - Loaded and processed default data
+2025-04-29 21:44:13 - fraudDetection - INFO - train.py:31 - Initialized fraud classifier trainer with params: {'model_type': 'LogisticRegression', 'params': {'class_weight': 'balanced', 'C': 0.1, 'max_iter': 1000, 'solver': 'liblinear'}, 'rules': {'max_hourly_transactions': 5, 'amount_deviation_multiplier': 3, 'max_daily_amount': 10000, 'suspicious_countries': ['XX', 'YY', 'ZZ']}}
+2025-04-29 21:44:13 - fraudDetection - DEBUG - logger.py:15 - Starting execution of train
+2025-04-29 21:44:13 - fraudDetection - INFO - train.py:110 - Training fraud classifier on 227845 samples (394 fraud instances)
+2025-04-29 21:44:13 - fraudDetection - DEBUG - logger.py:15 - Starting execution of preprocess
+2025-04-29 21:44:13 - fraudDetection - DEBUG - logger.py:20 - Executed preprocess in 0.6715 seconds
+2025-04-29 21:44:16 - fraudDetection - INFO - train.py:162 - Top 10 important features:
+2025-04-29 21:44:16 - fraudDetection - INFO - train.py:164 -   V10: -1.7450
+2025-04-29 21:44:16 - fraudDetection - INFO - train.py:164 -   V4: 1.5977
+2025-04-29 21:44:16 - fraudDetection - INFO - train.py:164 -   V1: 1.5443
+2025-04-29 21:44:16 - fraudDetection - INFO - train.py:164 -   V14: -1.5031
+2025-04-29 21:44:16 - fraudDetection - INFO - train.py:164 -   V5: 1.0812
+2025-04-29 21:44:16 - fraudDetection - INFO - train.py:164 -   V17: -1.0335
+2025-04-29 21:44:16 - fraudDetection - INFO - train.py:164 -   V12: -1.0129
+2025-04-29 21:44:16 - fraudDetection - INFO - train.py:164 -   V16: -0.9293
+2025-04-29 21:44:16 - fraudDetection - INFO - train.py:164 -   V20: -0.8766
+2025-04-29 21:44:16 - fraudDetection - INFO - train.py:164 -   norm_amount: 0.8528
+2025-04-29 21:44:16 - fraudDetection - DEBUG - logger.py:20 - Executed train in 3.3474 seconds
+2025-04-29 21:44:16 - fraudDetection - INFO - training_pipeline.py:57 - Classifier metrics - Precision: 0.0385, Recall: 0.0102, F1: 0.0161
+2025-04-29 21:44:16 - fraudDetection - DEBUG - logger.py:15 - Starting execution of save_model
+2025-04-29 21:44:16 - fraudDetection - INFO - model_ops.py:35 - Saved classifier model to experts/fraud_classifier/models/classifier_model.pkl
+2025-04-29 21:44:16 - fraudDetection - DEBUG - logger.py:20 - Executed save_model in 0.0040 seconds
+2025-04-29 21:44:16 - fraudDetection - INFO - model_ops.py:127 - Saved fraud_classifier metrics to C:\Users\JV\fraud_detection_system\experts/fraud_classifier/evaluation\fraud_classifier_metrics.json
+2025-04-29 21:44:16 - fraudDetection - DEBUG - logger.py:20 - Executed train_classifier in 5.3094 seconds
+2025-04-29 21:44:16 - fraudDetection - INFO - main.py:206 - Fraud classifier training completed
+2025-04-29 21:44:16 - fraudDetection - DEBUG - logger.py:15 - Starting execution of train_anomaly_detector
+2025-04-29 21:44:16 - fraudDetection - INFO - training_pipeline.py:69 - Starting anomaly detector training
+2025-04-29 21:44:18 - fraudDetection - INFO - training_pipeline.py:77 - Loaded and processed default data
+2025-04-29 21:44:18 - fraudDetection - INFO - train.py:37 - Initialized anomaly detector trainer with contamination: 0.01
+2025-04-29 21:44:18 - fraudDetection - DEBUG - logger.py:15 - Starting execution of train
+2025-04-29 21:44:18 - fraudDetection - INFO - train.py:126 - Training IsolationForest anomaly detector on 284315 samples
+2025-04-29 21:44:18 - fraudDetection - DEBUG - logger.py:15 - Starting execution of preprocess
+2025-04-29 21:44:18 - fraudDetection - DEBUG - logger.py:20 - Executed preprocess in 0.4100 seconds
+2025-04-29 21:44:20 - fraudDetection - DEBUG - logger.py:20 - Executed train in 1.9368 seconds
+2025-04-29 21:44:20 - fraudDetection - DEBUG - logger.py:15 - Starting execution of preprocess
+2025-04-29 21:44:20 - fraudDetection - DEBUG - logger.py:20 - Executed preprocess in 0.3883 seconds
+2025-04-29 21:44:22 - fraudDetection - INFO - training_pipeline.py:109 - Anomaly detector metrics - Precision: 0.0761, Recall: 0.4736, F1: 0.1311
+2025-04-29 21:44:23 - fraudDetection - DEBUG - logger.py:15 - Starting execution of save_model
+2025-04-29 21:44:23 - fraudDetection - INFO - model_ops.py:35 - Saved anomaly model to experts/anomaly_detector/models/isolation_forest.pkl
+2025-04-29 21:44:23 - fraudDetection - DEBUG - logger.py:20 - Executed save_model in 0.0319 seconds
+2025-04-29 21:44:23 - fraudDetection - INFO - model_ops.py:127 - Saved anomaly_detector metrics to C:\Users\JV\fraud_detection_system\experts/anomaly_detector/evaluation\anomaly_detector_metrics.json
+2025-04-29 21:44:23 - fraudDetection - DEBUG - logger.py:20 - Executed train_anomaly_detector in 6.4542 seconds
+2025-04-29 21:44:23 - fraudDetection - INFO - main.py:211 - Anomaly detector training completed
+2025-04-29 21:44:23 - fraudDetection - INFO - main.py:217 - Training pipeline completed successfully
+2025-04-29 21:47:47 - fraudDetection - INFO - main.py:224 - Starting inference pipeline
+2025-04-29 21:47:47 - fraudDetection - DEBUG - logger.py:15 - Starting execution of load_experts
+2025-04-29 21:47:47 - fraudDetection - DEBUG - logger.py:15 - Starting execution of load_model
+2025-04-29 21:47:47 - fraudDetection - INFO - model_ops.py:65 - Loaded classifier model from experts/fraud_classifier/models/classifier_model.pkl
+2025-04-29 21:47:47 - fraudDetection - DEBUG - logger.py:20 - Executed load_model in 0.0190 seconds
+2025-04-29 21:47:47 - fraudDetection - DEBUG - logger.py:15 - Starting execution of load_model
+2025-04-29 21:47:47 - fraudDetection - INFO - model_ops.py:65 - Loaded anomaly model from experts/anomaly_detector/models/isolation_forest.pkl
+2025-04-29 21:47:47 - fraudDetection - DEBUG - logger.py:20 - Executed load_model in 0.0118 seconds
+2025-04-29 21:47:47 - fraudDetection - INFO - context_buffer.py:47 - Context buffer initialized
+2025-04-29 21:47:47 - fraudDetection - INFO - knowledge_graph.py:56 - Initialized empty knowledge graph
+2025-04-29 21:47:47 - fraudDetection - INFO - knowledge_graph.py:25 - Knowledge graph initialized
+2025-04-29 21:47:47 - fraudDetection - INFO - dynamic_adjustments.py:34 - Initialized threshold adjuster with base thresholds: {'critical': -0.7, 'high': -0.4, 'low': 0.0, 'medium': -0.2}
+2025-04-29 21:47:47 - fraudDetection - INFO - detect.py:36 - Initialized anomaly detector expert with thresholds: {'critical': -0.7, 'high': -0.4, 'low': 0.0, 'medium': -0.2}
+2025-04-29 21:47:47 - fraudDetection - INFO - context_buffer.py:47 - Context buffer initialized
+2025-04-29 21:47:47 - fraudDetection - INFO - inference_pipeline.py:49 - Expert systems loaded successfully
+2025-04-29 21:47:47 - fraudDetection - DEBUG - logger.py:20 - Executed load_experts in 0.0828 seconds
+2025-04-29 21:47:47 - fraudDetection - ERROR - main.py:256 - Error in inference pipeline: Expecting value: line 1 column 1 (char 0)
+2025-04-29 21:48:14 - fraudDetection - INFO - main.py:224 - Starting inference pipeline
+2025-04-29 21:48:14 - fraudDetection - DEBUG - logger.py:15 - Starting execution of load_experts
+2025-04-29 21:48:14 - fraudDetection - DEBUG - logger.py:15 - Starting execution of load_model
+2025-04-29 21:48:14 - fraudDetection - INFO - model_ops.py:65 - Loaded classifier model from experts/fraud_classifier/models/classifier_model.pkl
+2025-04-29 21:48:14 - fraudDetection - DEBUG - logger.py:20 - Executed load_model in 0.0013 seconds
+2025-04-29 21:48:14 - fraudDetection - DEBUG - logger.py:15 - Starting execution of load_model
+2025-04-29 21:48:14 - fraudDetection - INFO - model_ops.py:65 - Loaded anomaly model from experts/anomaly_detector/models/isolation_forest.pkl
+2025-04-29 21:48:14 - fraudDetection - DEBUG - logger.py:20 - Executed load_model in 0.0035 seconds
+2025-04-29 21:48:14 - fraudDetection - INFO - context_buffer.py:47 - Context buffer initialized
+2025-04-29 21:48:14 - fraudDetection - INFO - knowledge_graph.py:56 - Initialized empty knowledge graph
+2025-04-29 21:48:14 - fraudDetection - INFO - knowledge_graph.py:25 - Knowledge graph initialized
+2025-04-29 21:48:14 - fraudDetection - INFO - dynamic_adjustments.py:34 - Initialized threshold adjuster with base thresholds: {'critical': -0.7, 'high': -0.4, 'low': 0.0, 'medium': -0.2}
+2025-04-29 21:48:14 - fraudDetection - INFO - detect.py:36 - Initialized anomaly detector expert with thresholds: {'critical': -0.7, 'high': -0.4, 'low': 0.0, 'medium': -0.2}
+2025-04-29 21:48:14 - fraudDetection - INFO - context_buffer.py:47 - Context buffer initialized
+2025-04-29 21:48:14 - fraudDetection - INFO - inference_pipeline.py:49 - Expert systems loaded successfully
+2025-04-29 21:48:14 - fraudDetection - DEBUG - logger.py:20 - Executed load_experts in 0.0192 seconds
+2025-04-29 21:48:14 - fraudDetection - ERROR - main.py:256 - Error in inference pipeline: Expecting value: line 1 column 1 (char 0)
+2025-04-29 21:49:31 - fraudDetection - INFO - main.py:224 - Starting inference pipeline
+2025-04-29 21:49:31 - fraudDetection - DEBUG - logger.py:15 - Starting execution of load_experts
+2025-04-29 21:49:31 - fraudDetection - DEBUG - logger.py:15 - Starting execution of load_model
+2025-04-29 21:49:31 - fraudDetection - INFO - model_ops.py:65 - Loaded classifier model from experts/fraud_classifier/models/classifier_model.pkl
+2025-04-29 21:49:31 - fraudDetection - DEBUG - logger.py:20 - Executed load_model in 0.0010 seconds
+2025-04-29 21:49:31 - fraudDetection - DEBUG - logger.py:15 - Starting execution of load_model
+2025-04-29 21:49:31 - fraudDetection - INFO - model_ops.py:65 - Loaded anomaly model from experts/anomaly_detector/models/isolation_forest.pkl
+2025-04-29 21:49:31 - fraudDetection - DEBUG - logger.py:20 - Executed load_model in 0.0052 seconds
+2025-04-29 21:49:31 - fraudDetection - INFO - context_buffer.py:47 - Context buffer initialized
+2025-04-29 21:49:31 - fraudDetection - INFO - knowledge_graph.py:56 - Initialized empty knowledge graph
+2025-04-29 21:49:31 - fraudDetection - INFO - knowledge_graph.py:25 - Knowledge graph initialized
+2025-04-29 21:49:31 - fraudDetection - INFO - dynamic_adjustments.py:34 - Initialized threshold adjuster with base thresholds: {'critical': -0.7, 'high': -0.4, 'low': 0.0, 'medium': -0.2}
+2025-04-29 21:49:31 - fraudDetection - INFO - detect.py:36 - Initialized anomaly detector expert with thresholds: {'critical': -0.7, 'high': -0.4, 'low': 0.0, 'medium': -0.2}
+2025-04-29 21:49:31 - fraudDetection - INFO - context_buffer.py:47 - Context buffer initialized
+2025-04-29 21:49:31 - fraudDetection - INFO - inference_pipeline.py:49 - Expert systems loaded successfully
+2025-04-29 21:49:31 - fraudDetection - DEBUG - logger.py:20 - Executed load_experts in 0.0181 seconds
+2025-04-29 21:49:31 - fraudDetection - DEBUG - logger.py:15 - Starting execution of process_from_file
+2025-04-29 21:49:31 - fraudDetection - INFO - inference_pipeline.py:104 - Loaded 2 transactions from test_transactions.json
+2025-04-29 21:49:31 - fraudDetection - DEBUG - logger.py:15 - Starting execution of process_batch
+2025-04-29 21:49:31 - fraudDetection - DEBUG - logger.py:15 - Starting execution of process_single_transaction
+2025-04-29 21:49:31 - fraudDetection - INFO - mediator.py:50 - Experts collab decision: ALLOW
+2025-04-29 21:49:31 - fraudDetection - INFO - inference_pipeline.py:65 - Transaction test456 processed with decision: ALLOW
+2025-04-29 21:49:31 - fraudDetection - DEBUG - logger.py:20 - Executed process_single_transaction in 0.0280 seconds
+2025-04-29 21:49:31 - fraudDetection - DEBUG - logger.py:15 - Starting execution of process_single_transaction
+2025-04-29 21:49:31 - fraudDetection - INFO - mediator.py:50 - Experts collab decision: ALLOW
+2025-04-29 21:49:31 - fraudDetection - INFO - inference_pipeline.py:65 - Transaction test789 processed with decision: ALLOW
+2025-04-29 21:49:31 - fraudDetection - DEBUG - logger.py:20 - Executed process_single_transaction in 0.0067 seconds
+2025-04-29 21:49:31 - fraudDetection - DEBUG - logger.py:20 - Executed process_batch in 0.0347 seconds
+2025-04-29 21:49:31 - fraudDetection - DEBUG - logger.py:20 - Executed process_from_file in 0.0697 seconds
+2025-04-29 21:49:31 - fraudDetection - INFO - main.py:259 - Inference pipeline completed successfully
+2025-04-29 22:32:53 - fraudDetection - INFO - main.py:198 - Starting training pipeline
+2025-04-29 22:32:53 - fraudDetection - DEBUG - logger.py:15 - Starting execution of train_classifier
+2025-04-29 22:32:53 - fraudDetection - INFO - training_pipeline.py:27 - Starting fraud classifier training
+2025-04-29 22:32:54 - fraudDetection - INFO - training_pipeline.py:35 - Loaded and processed default data
+2025-04-29 22:32:54 - fraudDetection - ERROR - logger.py:25 - Failed executing train_classifier after 1.1319 seconds: "['Class'] not found in axis"
+2025-04-29 22:32:55 - fraudDetection - DEBUG - logger.py:26 - Traceback (most recent call last):
+  File "C:\Users\JV\fraud_detection_system\infrastructure\utils\logger.py", line 18, in wrapper
+    result = func(*args, **kwargs)
+             ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\JV\fraud_detection_system\pipelines\training_pipeline.py", line 38, in train_classifier
+    X_train, X_test, y_train, y_test = split_data(df, target_col='Class', test_size=test_size)
+                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\JV\fraud_detection_system\infrastructure\utils\data_loader.py", line 57, in split_data
+    X = df.drop(columns=[target_col])
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\JV\AppData\Local\Programs\Python\Python312\Lib\site-packages\pandas\core\frame.py", line 5581, in drop
+    return super().drop(
+           ^^^^^^^^^^^^^
+  File "C:\Users\JV\AppData\Local\Programs\Python\Python312\Lib\site-packages\pandas\core\generic.py", line 4788, in drop
+    obj = obj._drop_axis(labels, axis, level=level, errors=errors)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\JV\AppData\Local\Programs\Python\Python312\Lib\site-packages\pandas\core\generic.py", line 4830, in _drop_axis
+    new_axis = axis.drop(labels, errors=errors)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\JV\AppData\Local\Programs\Python\Python312\Lib\site-packages\pandas\core\indexes\base.py", line 7070, in drop
+    raise KeyError(f"{labels[mask].tolist()} not found in axis")
+KeyError: "['Class'] not found in axis"
+
+2025-04-29 23:13:57 - fraudDetection - INFO - main.py:294 - Initializing fraud detection system
+2025-04-29 23:13:57 - fraudDetection - INFO - main.py:399 - Created user profiles database at C:\Users\JV\fraud_detection_system\experts/coordination/shared_context/user_profiles.db
+2025-04-29 23:13:57 - fraudDetection - INFO - main.py:482 - Created dynamic rules database at C:\Users\JV\fraud_detection_system\experts/fraud_classifier/rules/dynamic_rules.db
+2025-04-29 23:13:57 - fraudDetection - INFO - main.py:504 - System initialization completed
+2025-04-29 23:14:18 - fraudDetection - INFO - main.py:224 - Starting inference pipeline
+2025-04-29 23:14:18 - fraudDetection - DEBUG - logger.py:15 - Starting execution of load_experts
+2025-04-29 23:14:18 - fraudDetection - DEBUG - logger.py:15 - Starting execution of load_model
+2025-04-29 23:14:18 - fraudDetection - INFO - model_ops.py:65 - Loaded classifier model from experts/fraud_classifier/models/classifier_model.pkl
+2025-04-29 23:14:18 - fraudDetection - DEBUG - logger.py:20 - Executed load_model in 0.0051 seconds
+2025-04-29 23:14:18 - fraudDetection - DEBUG - logger.py:15 - Starting execution of load_model
+2025-04-29 23:14:18 - fraudDetection - INFO - model_ops.py:65 - Loaded anomaly model from experts/anomaly_detector/models/isolation_forest.pkl
+2025-04-29 23:14:18 - fraudDetection - DEBUG - logger.py:20 - Executed load_model in 0.0247 seconds
+2025-04-29 23:14:18 - fraudDetection - INFO - context_buffer.py:47 - Context buffer initialized
+2025-04-29 23:14:18 - fraudDetection - INFO - knowledge_graph.py:56 - Initialized empty knowledge graph
+2025-04-29 23:14:18 - fraudDetection - INFO - knowledge_graph.py:25 - Knowledge graph initialized
+2025-04-29 23:14:18 - fraudDetection - INFO - dynamic_adjustments.py:34 - Initialized threshold adjuster with base thresholds: {'critical': -0.7, 'high': -0.4, 'low': 0.0, 'medium': -0.2}
+2025-04-29 23:14:18 - fraudDetection - INFO - detect.py:36 - Initialized anomaly detector expert with thresholds: {'critical': -0.7, 'high': -0.4, 'low': 0.0, 'medium': -0.2}
+2025-04-29 23:14:18 - fraudDetection - INFO - context_buffer.py:47 - Context buffer initialized
+2025-04-29 23:14:18 - fraudDetection - INFO - inference_pipeline.py:49 - Expert systems loaded successfully
+2025-04-29 23:14:18 - fraudDetection - DEBUG - logger.py:20 - Executed load_experts in 0.1002 seconds
+2025-04-29 23:14:18 - fraudDetection - DEBUG - logger.py:15 - Starting execution of process_from_file
+2025-04-29 23:14:18 - fraudDetection - INFO - inference_pipeline.py:104 - Loaded 3 transactions from test_transactions.json
+2025-04-29 23:14:18 - fraudDetection - DEBUG - logger.py:15 - Starting execution of process_batch
+2025-04-29 23:14:18 - fraudDetection - DEBUG - logger.py:15 - Starting execution of process_single_transaction
+2025-04-29 23:14:18 - fraudDetection - INFO - mediator.py:50 - Experts collab decision: BLOCK
+2025-04-29 23:14:18 - fraudDetection - INFO - inference_pipeline.py:65 - Transaction test456 processed with decision: BLOCK
+2025-04-29 23:14:18 - fraudDetection - DEBUG - logger.py:20 - Executed process_single_transaction in 0.0481 seconds
+2025-04-29 23:14:18 - fraudDetection - DEBUG - logger.py:15 - Starting execution of process_single_transaction
+2025-04-29 23:14:18 - fraudDetection - INFO - mediator.py:50 - Experts collab decision: ALLOW
+2025-04-29 23:14:18 - fraudDetection - INFO - inference_pipeline.py:65 - Transaction test789 processed with decision: ALLOW
+2025-04-29 23:14:18 - fraudDetection - DEBUG - logger.py:20 - Executed process_single_transaction in 0.0181 seconds
+2025-04-29 23:14:18 - fraudDetection - DEBUG - logger.py:15 - Starting execution of process_single_transaction
+2025-04-29 23:14:18 - fraudDetection - INFO - mediator.py:50 - Experts collab decision: ALLOW
+2025-04-29 23:14:18 - fraudDetection - INFO - inference_pipeline.py:65 - Transaction test101 processed with decision: ALLOW
+2025-04-29 23:14:18 - fraudDetection - DEBUG - logger.py:20 - Executed process_single_transaction in 0.0108 seconds
+2025-04-29 23:14:18 - fraudDetection - DEBUG - logger.py:20 - Executed process_batch in 0.0769 seconds
+2025-04-29 23:14:18 - fraudDetection - DEBUG - logger.py:20 - Executed process_from_file in 0.1131 seconds
+2025-04-29 23:14:18 - fraudDetection - INFO - main.py:259 - Inference pipeline completed successfully
+2025-04-29 23:15:16 - fraudDetection - INFO - main.py:224 - Starting inference pipeline
+2025-04-29 23:15:16 - fraudDetection - DEBUG - logger.py:15 - Starting execution of load_experts
+2025-04-29 23:15:16 - fraudDetection - DEBUG - logger.py:15 - Starting execution of load_model
+2025-04-29 23:15:16 - fraudDetection - INFO - model_ops.py:65 - Loaded classifier model from experts/fraud_classifier/models/classifier_model.pkl
+2025-04-29 23:15:16 - fraudDetection - DEBUG - logger.py:20 - Executed load_model in 0.0047 seconds
+2025-04-29 23:15:16 - fraudDetection - DEBUG - logger.py:15 - Starting execution of load_model
+2025-04-29 23:15:16 - fraudDetection - INFO - model_ops.py:65 - Loaded anomaly model from experts/anomaly_detector/models/isolation_forest.pkl
+2025-04-29 23:15:16 - fraudDetection - DEBUG - logger.py:20 - Executed load_model in 0.0092 seconds
+2025-04-29 23:15:16 - fraudDetection - INFO - context_buffer.py:47 - Context buffer initialized
+2025-04-29 23:15:16 - fraudDetection - INFO - knowledge_graph.py:56 - Initialized empty knowledge graph
+2025-04-29 23:15:16 - fraudDetection - INFO - knowledge_graph.py:25 - Knowledge graph initialized
+2025-04-29 23:15:16 - fraudDetection - INFO - dynamic_adjustments.py:34 - Initialized threshold adjuster with base thresholds: {'critical': -0.7, 'high': -0.4, 'low': 0.0, 'medium': -0.2}
+2025-04-29 23:15:16 - fraudDetection - INFO - detect.py:36 - Initialized anomaly detector expert with thresholds: {'critical': -0.7, 'high': -0.4, 'low': 0.0, 'medium': -0.2}
+2025-04-29 23:15:16 - fraudDetection - INFO - context_buffer.py:47 - Context buffer initialized
+2025-04-29 23:15:16 - fraudDetection - INFO - inference_pipeline.py:49 - Expert systems loaded successfully
+2025-04-29 23:15:16 - fraudDetection - DEBUG - logger.py:20 - Executed load_experts in 0.1181 seconds
+2025-04-29 23:15:16 - fraudDetection - ERROR - main.py:256 - Error in inference pipeline: Expecting value: line 1 column 1 (char 0)

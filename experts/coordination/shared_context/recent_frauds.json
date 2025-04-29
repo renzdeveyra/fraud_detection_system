@@ -1,39 +1,61 @@
 {
-    "recent_frauds": [
-      {
-        "transaction_id": "example_id_1",
-        "timestamp": "2025-04-28T12:34:56.789Z",
-        "features": {
-          "amount": 999.99,
-          "merchant_category": "digital_goods",
-          "country": "XX",
-          "hour_of_day": 3,
-          "velocity": 4
+  "recent_frauds": [
+    {
+      "transaction_id": "example_id_1",
+      "timestamp": "2025-04-28T12:34:56.789Z",
+      "features": {
+        "amount": 999.99,
+        "merchant_category": "digital_goods",
+        "country": "XX",
+        "hour_of_day": 3,
+        "velocity": 4
+      },
+      "classifier_score": 0.92,
+      "anomaly_score": -0.75,
+      "rule_violations": [
+        "high_value_threshold",
+        "unusual_hour",
+        "suspicious_country"
+      ]
+    },
+    {
+      "transaction_features": {
+        "amount": 8000,
+        "merchant": "Online Casino",
+        "merchant_category": "gambling",
+        "country": "XX",
+        "hour_of_day": 3,
+        "distance_from_home": 150,
+        "distance_from_last_transaction": 120,
+        "ratio_to_median_purchase_price": 5.2,
+        "repeat_retailer": 0,
+        "used_chip": 0,
+        "used_pin_number": 0,
+        "online_order": 1
+      },
+      "classifier_insights": 9,
+      "anomaly_insights": {
+        "score": 0.22518919508905944,
+        "cluster_deviation": 0.0
+      },
+      "timestamp": "2025-04-29T23:14:18.326615"
+    }
+  ],
+  "fraud_patterns": [
+    {
+      "pattern_id": "pattern_1",
+      "description": "Late night digital goods purchases",
+      "detection_date": "2025-04-28T00:00:00.000Z",
+      "key_features": {
+        "hour_of_day": {
+          "min": 1,
+          "max": 5
         },
-        "classifier_score": 0.92,
-        "anomaly_score": -0.75,
-        "rule_violations": [
-          "high_value_threshold",
-          "unusual_hour",
-          "suspicious_country"
-        ]
-      }
-    ],
-    "fraud_patterns": [
-      {
-        "pattern_id": "pattern_1",
-        "description": "Late night digital goods purchases",
-        "detection_date": "2025-04-28T00:00:00.000Z",
-        "key_features": {
-          "hour_of_day": {
-            "min": 1,
-            "max": 5
-          },
-          "merchant_category": "digital_goods"
-        },
-        "confidence": 0.85,
-        "instances_count": 12
-      }
-    ],
-    "last_updated": "2025-04-28T12:34:56.789Z"
-  }
+        "merchant_category": "digital_goods"
+      },
+      "confidence": 0.85,
+      "instances_count": 12
+    }
+  ],
+  "last_updated": "2025-04-28T12:34:56.789Z"
+}

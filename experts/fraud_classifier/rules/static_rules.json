@@ -14,7 +14,9 @@
       "YY",
       "ZZ"
     ],
-    "unusual_location_change_hours": 24
+    "unusual_location_change_hours": 24,
+    "high_distance_from_home": 100,
+    "high_distance_from_last_transaction": 50
   },
   "time_rules": {
     "unusual_hour_start": 1,
@@ -26,6 +28,14 @@
       "digital_goods",
       "money_transfer"
     ]
+  },
+  "transaction_rules": {
+    "high_ratio_to_median_threshold": 3.0,
+    "suspicious_payment_methods": {
+      "no_chip": true,
+      "no_pin": true,
+      "online_order": true
+    }
   },
   "user_profile_rules": {
     "new_account_days": 30,

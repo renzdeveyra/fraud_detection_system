@@ -1,0 +1,16 @@
+{
+  "id": "test456",
+  "amount": 8000,
+  "merchant": "Online Casino",
+  "merchant_category": "gambling",
+  "country": "XX",
+  "hour_of_day": 3,
+  "user_id": "user456",
+  "distance_from_home": 150,
+  "distance_from_last_transaction": 120,
+  "ratio_to_median_purchase_price": 5.2,
+  "repeat_retailer": 0,
+  "used_chip": 0,
+  "used_pin_number": 0,
+  "online_order": 1
+}
