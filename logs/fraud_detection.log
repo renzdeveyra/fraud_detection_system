@@ -2104,3 +2104,58 @@ UnicodeDecodeError: 'utf-8' codec can't decode byte 0x80 in position 7: invalid 
 2025-05-05 04:58:24 - fraudDetection - INFO - main.py:265 - Starting model evaluation for both
 2025-05-05 04:58:24 - fraudDetection - INFO - main.py:272 - Using default evaluation data: C:\Users\renzd\Desktop\fraud_detection_system\data/evaluation/default_eval.csv
 2025-05-05 04:58:24 - fraudDetection - ERROR - main.py:280 - Failed to load evaluation data: [Errno 2] No such file or directory: 'C:\\Users\\renzd\\Desktop\\fraud_detection_system\\data/evaluation/default_eval.csv'
+2025-05-05 05:04:41 - fraudDetection - INFO - main.py:265 - Starting model evaluation for both
+2025-05-05 05:04:42 - fraudDetection - INFO - main.py:278 - Loaded evaluation data from data\processed\transactions_processed.parquet with 1000000 records
+2025-05-05 05:04:42 - fraudDetection - INFO - main.py:297 - Evaluating fraud classifier model
+2025-05-05 05:04:42 - fraudDetection - INFO - main.py:309 - Loaded classifier model from C:\Users\renzd\Desktop\fraud_detection_system\experts/fraud_classifier/models/classifier_model.pkl
+2025-05-05 05:04:42 - fraudDetection - INFO - train.py:69 - Initialized fraud classifier trainer with core features: ['distance_from_home', 'distance_from_last_transaction', 'ratio_to_median_purchase_price', 'repeat_retailer', 'used_chip', 'used_pin_number', 'online_order']
+2025-05-05 05:04:42 - fraudDetection - INFO - train.py:70 - Parameters: {'model_type': 'LogisticRegression', 'params': {'class_weight': 'balanced', 'C': 0.1, 'max_iter': 1000, 'solver': 'liblinear'}, 'rules': {'distance_rules': {'high_distance_from_home': 100, 'high_distance_from_last_transaction': 50}, 'transaction_pattern_rules': {'high_ratio_to_median_threshold': 3.0, 'new_retailer_flag': True}, 'payment_method_rules': {'no_chip': True, 'no_pin': True, 'online_order': True}}}
+2025-05-05 05:04:42 - fraudDetection - DEBUG - logger.py:15 - Starting execution of preprocess
+2025-05-05 05:04:42 - fraudDetection - DEBUG - logger.py:20 - Executed preprocess in 0.2220 seconds
+2025-05-05 05:04:43 - fraudDetection - INFO - main.py:354 - Classifier evaluation completed
+2025-05-05 05:04:43 - fraudDetection - INFO - main.py:361 - Evaluating anomaly detector model
+2025-05-05 05:04:43 - fraudDetection - INFO - main.py:373 - Loaded anomaly detector model from C:\Users\renzd\Desktop\fraud_detection_system\experts/anomaly_detector/models/isolation_forest.pkl
+2025-05-05 05:04:43 - fraudDetection - INFO - train.py:73 - Initialized anomaly detector trainer with contamination: 0.01
+2025-05-05 05:04:43 - fraudDetection - INFO - train.py:74 - Using core features: ['distance_from_home', 'distance_from_last_transaction', 'ratio_to_median_purchase_price', 'repeat_retailer', 'used_chip', 'used_pin_number', 'online_order']
+2025-05-05 05:04:43 - fraudDetection - DEBUG - logger.py:15 - Starting execution of preprocess
+2025-05-05 05:04:44 - fraudDetection - DEBUG - logger.py:20 - Executed preprocess in 0.3649 seconds
+2025-05-05 05:04:56 - fraudDetection - INFO - main.py:421 - Anomaly detector evaluation completed
+2025-05-05 05:04:56 - fraudDetection - INFO - main.py:426 - Model evaluation completed
+2025-05-05 05:05:49 - fraudDetection - INFO - main.py:265 - Starting model evaluation for classifier
+2025-05-05 05:05:49 - fraudDetection - INFO - main.py:278 - Loaded evaluation data from data\processed\transactions_processed.parquet with 1000000 records
+2025-05-05 05:05:49 - fraudDetection - INFO - main.py:297 - Evaluating fraud classifier model
+2025-05-05 05:05:49 - fraudDetection - INFO - main.py:309 - Loaded classifier model from C:\Users\renzd\Desktop\fraud_detection_system\experts/fraud_classifier/models/classifier_model.pkl
+2025-05-05 05:05:49 - fraudDetection - INFO - train.py:69 - Initialized fraud classifier trainer with core features: ['distance_from_home', 'distance_from_last_transaction', 'ratio_to_median_purchase_price', 'repeat_retailer', 'used_chip', 'used_pin_number', 'online_order']
+2025-05-05 05:05:49 - fraudDetection - INFO - train.py:70 - Parameters: {'model_type': 'LogisticRegression', 'params': {'class_weight': 'balanced', 'C': 0.1, 'max_iter': 1000, 'solver': 'liblinear'}, 'rules': {'distance_rules': {'high_distance_from_home': 100, 'high_distance_from_last_transaction': 50}, 'transaction_pattern_rules': {'high_ratio_to_median_threshold': 3.0, 'new_retailer_flag': True}, 'payment_method_rules': {'no_chip': True, 'no_pin': True, 'online_order': True}}}
+2025-05-05 05:05:49 - fraudDetection - DEBUG - logger.py:15 - Starting execution of preprocess
+2025-05-05 05:05:49 - fraudDetection - DEBUG - logger.py:20 - Executed preprocess in 0.2317 seconds
+2025-05-05 05:05:51 - fraudDetection - INFO - main.py:354 - Classifier evaluation completed
+2025-05-05 05:05:51 - fraudDetection - INFO - main.py:426 - Model evaluation completed
+2025-05-05 05:06:12 - fraudDetection - INFO - main.py:265 - Starting model evaluation for anomaly
+2025-05-05 05:06:13 - fraudDetection - INFO - main.py:278 - Loaded evaluation data from data\processed\transactions_processed.parquet with 1000000 records
+2025-05-05 05:06:13 - fraudDetection - INFO - main.py:361 - Evaluating anomaly detector model
+2025-05-05 05:06:13 - fraudDetection - INFO - main.py:373 - Loaded anomaly detector model from C:\Users\renzd\Desktop\fraud_detection_system\experts/anomaly_detector/models/isolation_forest.pkl
+2025-05-05 05:06:13 - fraudDetection - INFO - train.py:73 - Initialized anomaly detector trainer with contamination: 0.01
+2025-05-05 05:06:13 - fraudDetection - INFO - train.py:74 - Using core features: ['distance_from_home', 'distance_from_last_transaction', 'ratio_to_median_purchase_price', 'repeat_retailer', 'used_chip', 'used_pin_number', 'online_order']
+2025-05-05 05:06:13 - fraudDetection - DEBUG - logger.py:15 - Starting execution of preprocess
+2025-05-05 05:06:13 - fraudDetection - DEBUG - logger.py:20 - Executed preprocess in 0.3509 seconds
+2025-05-05 05:06:25 - fraudDetection - INFO - main.py:421 - Anomaly detector evaluation completed
+2025-05-05 05:06:25 - fraudDetection - INFO - main.py:426 - Model evaluation completed
+2025-05-05 05:10:05 - fraudDetection - INFO - main.py:444 - Configuration update not implemented yet
+2025-05-05 05:10:18 - fraudDetection - ERROR - main.py:448 - No config action specified
+2025-05-05 05:19:16 - fraudDetection - INFO - main.py:527 - Updated params configuration: classifier.params.C = 0.5
+2025-05-05 05:19:49 - fraudDetection - INFO - rule_manager.py:32 - Loaded static rules from C:\Users\renzd\Desktop\fraud_detection_system\experts/fraud_classifier/rules/static_rules.json
+2025-05-05 05:19:49 - fraudDetection - INFO - rule_manager.py:111 - Loaded 30 dynamic rules from database
+2025-05-05 05:20:25 - fraudDetection - INFO - dynamic_adjustments.py:34 - Initialized threshold adjuster with base thresholds: {'critical': -0.7, 'high': -0.4, 'low': 0.0, 'medium': -0.2}
+2025-05-05 05:40:01 - fraudDetection - INFO - rule_manager.py:32 - Loaded static rules from C:\Users\renzd\Desktop\fraud_detection_system\experts/fraud_classifier/rules/static_rules.json
+2025-05-05 05:40:01 - fraudDetection - INFO - rule_manager.py:111 - Loaded 30 dynamic rules from database
+2025-05-05 05:40:17 - fraudDetection - INFO - main.py:286 - Starting model evaluation for classifier
+2025-05-05 05:40:17 - fraudDetection - INFO - main.py:299 - Loaded evaluation data from data\processed\transactions_processed.parquet with 1000000 records
+2025-05-05 05:40:17 - fraudDetection - INFO - main.py:318 - Evaluating fraud classifier model
+2025-05-05 05:40:17 - fraudDetection - INFO - main.py:330 - Loaded classifier model from C:\Users\renzd\Desktop\fraud_detection_system\experts/fraud_classifier/models/classifier_model.pkl
+2025-05-05 05:40:17 - fraudDetection - INFO - train.py:69 - Initialized fraud classifier trainer with core features: ['distance_from_home', 'distance_from_last_transaction', 'ratio_to_median_purchase_price', 'repeat_retailer', 'used_chip', 'used_pin_number', 'online_order']
+2025-05-05 05:40:17 - fraudDetection - INFO - train.py:70 - Parameters: {'model_type': 'LogisticRegression', 'params': {'class_weight': 'balanced', 'C': 0.5, 'max_iter': 1000, 'solver': 'liblinear'}, 'rules': {'distance_rules': {'high_distance_from_home': 100, 'high_distance_from_last_transaction': 50}, 'transaction_pattern_rules': {'high_ratio_to_median_threshold': 3.0, 'new_retailer_flag': True}, 'payment_method_rules': {'no_chip': True, 'no_pin': True, 'online_order': True}}}
+2025-05-05 05:40:17 - fraudDetection - DEBUG - logger.py:15 - Starting execution of preprocess
+2025-05-05 05:40:17 - fraudDetection - DEBUG - logger.py:20 - Executed preprocess in 0.2321 seconds
+2025-05-05 05:40:19 - fraudDetection - INFO - main.py:375 - Classifier evaluation completed
+2025-05-05 05:40:19 - fraudDetection - INFO - main.py:447 - Model evaluation completed

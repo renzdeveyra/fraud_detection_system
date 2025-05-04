@@ -1,15 +1,11 @@
-# Model hyperparameters and thresholds
-
 classifier:
-  model_type: "LogisticRegression"
+  model_type: LogisticRegression
   params:
-    class_weight: "balanced"
-    C: 0.1
+    class_weight: balanced
+    C: 0.5
     max_iter: 1000
-    solver: "liblinear"
-
+    solver: liblinear
   rules:
-    # Rules based on core dataset features
     distance_rules:
       high_distance_from_home: 100
       high_distance_from_last_transaction: 50
@@ -20,24 +16,19 @@ classifier:
       no_chip: true
       no_pin: true
       online_order: true
-
 anomaly:
-  model_type: "IsolationForest"
+  model_type: IsolationForest
   params:
     n_estimators: 100
     contamination: 0.01
     random_state: 42
-    max_samples: "auto"
-
+    max_samples: auto
   thresholds:
-    # Thresholds based on evaluation of core dataset features
     critical_threshold: -0.1
     high_threshold: 0.05
     normal_threshold: 0.1
     adjustment_rate: 0.1
-
   feature_importance:
-    # Weights for core dataset features
     distance_from_home_weight: 0.2
     distance_from_last_transaction_weight: 0.2
     ratio_to_median_purchase_price_weight: 0.2
@@ -45,22 +36,16 @@ anomaly:
     used_chip_weight: 0.1
     used_pin_number_weight: 0.1
     online_order_weight: 0.1
-
 mediator:
-  # Adjusted weights based on model evaluation
-  classifier_weight: 0.8 # Increased due to better performance
-  anomaly_weight: 0.2 # Decreased due to lower performance
+  classifier_weight: 0.8
+  anomaly_weight: 0.2
   confidence_threshold: 0.9
   block_threshold: 0.8
   review_threshold: 0.5
-
-  # Core feature importance in decision making
   feature_weights:
-    distance_features: 0.4 # distance_from_home, distance_from_last_transaction
-    payment_method: 0.3 # used_chip, used_pin_number, online_order
-    purchase_pattern: 0.3 # ratio_to_median_purchase_price, repeat_retailer
-
+    distance_features: 0.4
+    payment_method: 0.3
+    purchase_pattern: 0.3
 memory:
   context_buffer_size: 1000
   fraud_pattern_retention: 90
-  # Removed user_history_days as we're not using user profiles

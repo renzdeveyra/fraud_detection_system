@@ -89,11 +89,32 @@ def setup_config_parser(subparsers):
     """Setup the parser for the config command"""
     config_parser = subparsers.add_parser(
         'config',
-        help='Manage system configuration'
+        help='Manage system configuration',
+        description="""
+        View and update system configuration parameters.
+
+        The config command allows you to:
+        - View the current configuration (paths and model parameters)
+        - Update specific configuration parameters
+
+        Examples:
+          python main.py config --show
+          python main.py config --update "classifier.params.C=0.5"
+          python main.py config --update "anomaly.thresholds.critical_threshold=-0.2"
+        """
     )
 
-    config_parser.add_argument('--show', action='store_true', help='Show current configuration')
-    config_parser.add_argument('--update', type=str, help='Update configuration parameter (key=value)')
+    config_parser.add_argument(
+        '--show',
+        action='store_true',
+        help='Show current configuration in a readable format'
+    )
+
+    config_parser.add_argument(
+        '--update',
+        type=str,
+        help='Update configuration parameter in the format "key.subkey=value" (e.g., "classifier.params.C=0.5")'
+    )
 
     return config_parser
 
@@ -428,22 +449,96 @@ def handle_evaluate(args):
 
 def handle_config(args):
     """Handle the config command"""
-    from infrastructure.config import load_paths, load_params
+    import yaml
+    import os
+    from infrastructure.config import load_paths, load_params, get_project_root
 
     if args.show:
-        # Show current configuration
+        # Show current configuration in a readable YAML format
         paths = load_paths()
         params = load_params()
 
         print("=== Paths Configuration ===")
-        print(paths)
+        print(yaml.dump(paths, default_flow_style=False, sort_keys=False))
+
         print("\n=== Model Parameters ===")
-        print(params)
+        print(yaml.dump(params, default_flow_style=False, sort_keys=False))
 
     elif args.update:
-        logger.info("Configuration update not implemented yet")
-        # This would be implemented to update configuration parameters
+        # Parse the update string (format: "key.subkey=value")
+        try:
+            # Split by the first equals sign
+            param_path, new_value_str = args.update.split('=', 1)
 
+            # Split the parameter path by dots
+            param_keys = param_path.strip().split('.')
+
+            # Determine which config file to update
+            if param_keys[0] in ['data', 'models', 'shared', 'logs']:
+                config_type = 'paths'
+                config_data = load_paths()
+                config_file = os.path.join(get_project_root(), 'infrastructure/config/paths.yaml')
+            else:
+                config_type = 'params'
+                config_data = load_params()
+                config_file = os.path.join(get_project_root(), 'infrastructure/config/model_params.yaml')
+
+            # Convert the new value to the appropriate type
+            try:
+                # Try to convert to numeric types first
+                if new_value_str.lower() == 'true':
+                    new_value = True
+                elif new_value_str.lower() == 'false':
+                    new_value = False
+                elif '.' in new_value_str:
+                    new_value = float(new_value_str)
+                else:
+                    new_value = int(new_value_str)
+            except ValueError:
+                # If conversion fails, keep it as a string
+                new_value = new_value_str
+
+            # Navigate to the parameter in the config
+            current = config_data
+            for i, key in enumerate(param_keys):
+                if i == len(param_keys) - 1:
+                    # We're at the final key, update the value
+                    if key not in current:
+                        raise KeyError(f"Parameter '{key}' not found in configuration")
+
+                    # Validate the type of the new value
+                    old_value = current[key]
+                    if not isinstance(new_value, type(old_value)) and not (
+                            isinstance(old_value, (int, float)) and isinstance(new_value, (int, float))):
+                        logger.warning(f"Type mismatch: changing from {type(old_value).__name__} to {type(new_value).__name__}")
+
+                    # Update the value
+                    current[key] = new_value
+                else:
+                    # We're still navigating the config hierarchy
+                    if key not in current:
+                        raise KeyError(f"Parameter '{key}' not found in configuration")
+                    current = current[key]
+
+            # Save the updated configuration
+            with open(config_file, 'w') as f:
+                yaml.dump(config_data, f, default_flow_style=False, sort_keys=False)
+
+            logger.info(f"Updated {config_type} configuration: {param_path} = {new_value}")
+
+            # Show the updated parameter
+            print(f"Updated {config_type} configuration:")
+            print(f"{param_path} = {new_value}")
+
+        except ValueError:
+            logger.error("Invalid update format. Use 'key.subkey=value' format.")
+            sys.exit(1)
+        except KeyError as e:
+            logger.error(f"Configuration error: {str(e)}")
+            sys.exit(1)
+        except Exception as e:
+            logger.error(f"Error updating configuration: {str(e)}")
+            sys.exit(1)
     else:
         logger.error("No config action specified")
         sys.exit(1)
@@ -648,6 +743,8 @@ def handle_setup(args):
 
 def handle_rules(args):
     """Handle the rules command"""
+    import yaml
+
     if not hasattr(args, 'rules_command') or args.rules_command is None:
         logger.error("No rules command specified")
         sys.exit(1)
@@ -657,23 +754,44 @@ def handle_rules(args):
         if args.type in ['static', 'all']:
             static_rules = rule_manager.get_static_rules()
             print("=== Static Rules ===")
-            print(json.dumps(static_rules, indent=2))
+            print(yaml.dump(static_rules, default_flow_style=False, sort_keys=False))
 
         if args.type in ['dynamic', 'all']:
             dynamic_rules = rule_manager.get_dynamic_rules()
             print("=== Dynamic Rules ===")
-            print(json.dumps(dynamic_rules, indent=2))
+
+            # Format dynamic rules for better readability
+            if dynamic_rules:
+                for rule in dynamic_rules:
+                    print(f"Rule ID: {rule['id']}")
+                    print(f"  Name: {rule['rule_name']}")
+                    print(f"  Type: {rule['rule_type']}")
+                    print(f"  Feature: {rule['feature']}")
+                    print(f"  Condition: {rule['feature']} {rule['operator']} {rule['threshold']}")
+                    print(f"  Confidence: {rule['confidence']}")
+                    print(f"  Active: {'Yes' if rule['is_active'] else 'No'}")
+                    print(f"  Created: {rule['created_at']}")
+                    print()
+            else:
+                print("No dynamic rules found.")
 
     elif args.rules_command == 'add':
         # Add rule
-        rule_manager.add_rule(
+        success = rule_manager.add_rule(
             name=args.name,
             rule_type=args.type,
             feature=args.feature,
             operator=args.operator,
-            threshold=args.threshold
+            threshold=args.threshold,
+            confidence=0.8  # Default confidence
         )
-        logger.info(f"Rule '{args.name}' added successfully")
+
+        if success:
+            logger.info(f"Rule '{args.name}' added successfully")
+            print(f"Rule '{args.name}' added successfully")
+        else:
+            logger.error(f"Failed to add rule '{args.name}'")
+            print(f"Failed to add rule '{args.name}'")
 
     elif args.rules_command == 'update':
         # Update rule
@@ -683,12 +801,19 @@ def handle_rules(args):
         if args.threshold is not None:
             updates['threshold'] = args.threshold
 
-        rule_manager.update_rule(args.id, updates)
-        logger.info(f"Rule {args.id} updated successfully")
+        success = rule_manager.update_rule(args.id, updates)
+
+        if success:
+            logger.info(f"Rule {args.id} updated successfully")
+            print(f"Rule {args.id} updated successfully")
+        else:
+            logger.error(f"Failed to update rule {args.id}")
+            print(f"Failed to update rule {args.id}")
 
 
 def handle_thresholds(args):
     """Handle the thresholds command"""
+    import yaml
     adjuster = ThresholdAdjuster()
 
     if not hasattr(args, 'thresholds_command') or args.thresholds_command is None:
@@ -696,34 +821,55 @@ def handle_thresholds(args):
         sys.exit(1)
 
     if args.thresholds_command == 'show':
-        # Show thresholds
+        # Show thresholds in a readable format
         thresholds = adjuster.thresholds
         print("=== Current Anomaly Thresholds ===")
-        print(json.dumps(thresholds, indent=2))
+        print(yaml.dump(thresholds, default_flow_style=False, sort_keys=False))
+
+        # Add explanation of thresholds
+        print("\nThreshold Explanation:")
+        print("  critical_threshold: Transactions below this score are considered highly anomalous")
+        print("  high_threshold: Transactions below this score are considered moderately anomalous")
+        print("  normal_threshold: Transactions below this score are considered slightly anomalous")
+        print("  adjustment_rate: Rate at which thresholds are adjusted during auto-adjustment")
 
     elif args.thresholds_command == 'adjust':
         # Adjust thresholds
         if args.auto:
             # Auto-adjust based on recent data
             new_thresholds = adjuster.adjust_thresholds()
-            logger.info(f"Thresholds automatically adjusted: {new_thresholds}")
+            logger.info(f"Thresholds automatically adjusted")
+
+            print("Thresholds automatically adjusted:")
+            print(yaml.dump(new_thresholds, default_flow_style=False, sort_keys=False))
         else:
             # Manual adjustment
             updates = {}
             if args.critical is not None:
-                updates['critical'] = args.critical
+                updates['critical_threshold'] = args.critical
             if args.high is not None:
-                updates['high'] = args.high
+                updates['high_threshold'] = args.high
             if args.medium is not None:
-                updates['medium'] = args.medium
+                updates['normal_threshold'] = args.medium
             if args.low is not None:
-                updates['low'] = args.low
+                updates['adjustment_rate'] = args.low
 
+            # Show before values
+            print("Previous thresholds:")
+            print(yaml.dump(adjuster.thresholds, default_flow_style=False, sort_keys=False))
+
+            # Update values
             for key, value in updates.items():
                 adjuster.thresholds[key] = value
 
+            # Save changes
             adjuster.save_thresholds()
-            logger.info(f"Thresholds manually adjusted: {adjuster.thresholds}")
+
+            # Show after values
+            print("\nUpdated thresholds:")
+            print(yaml.dump(adjuster.thresholds, default_flow_style=False, sort_keys=False))
+
+            logger.info("Thresholds manually adjusted")
 
 
 def main():
