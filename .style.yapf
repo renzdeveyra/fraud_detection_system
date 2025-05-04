@@ -1,0 +1,27 @@
+[style]
+based_on_style = pep8
+column_limit = 100
+spaces_before_comment = 2
+split_before_logical_operator = true
+dedent_closing_brackets = true
+coalesce_brackets = true
+align_closing_bracket_with_visual_indent = true
+
+[docstring]
+# Google style docstrings
+# Example:
+# """
+# Short description.
+#
+# Longer description with more details.
+#
+# Args:
+#     param1: Description of param1
+#     param2: Description of param2
+#
+# Returns:
+#     Description of return value
+#
+# Raises:
+#     ExceptionType: When and why this exception is raised
+# """
