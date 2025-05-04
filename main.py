@@ -11,7 +11,6 @@ all functionality of the fraud detection system, including:
 - Setting up the system infrastructure
 - Managing fraud detection rules
 - Adjusting anomaly detection thresholds
-- Viewing and managing user profiles
 
 Usage:
     python main.py train [options]
@@ -21,7 +20,6 @@ Usage:
     python main.py setup [options]
     python main.py rules [options]
     python main.py thresholds [options]
-    python main.py profiles [options]
 """
 
 import sys
@@ -39,7 +37,6 @@ from pipelines.inference_pipeline import (
 # Import new modules
 from experts.anomaly_detector.thresholds.dynamic_adjustments import ThresholdAdjuster
 import experts.fraud_classifier.rules.rule_manager as rule_manager
-import experts.coordination.context_manager as context_manager
 
 
 def setup_train_parser(subparsers):
@@ -112,6 +109,8 @@ def setup_setup_parser(subparsers):
                              help='Force recreation of databases')
     setup_parser.add_argument('--skip-db', action='store_true',
                              help='Skip database creation')
+    setup_parser.add_argument('--process-data', action='store_true',
+                             help='Process raw data into processed format')
 
     return setup_parser
 
@@ -171,26 +170,7 @@ def setup_thresholds_parser(subparsers):
     return thresholds_parser
 
 
-def setup_profiles_parser(subparsers):
-    """Setup the parser for the profiles command"""
-    profiles_parser = subparsers.add_parser(
-        'profiles',
-        help='Manage user profiles'
-    )
 
-    profiles_subparsers = profiles_parser.add_subparsers(dest='profiles_command')
-
-    # Show profile
-    show_parser = profiles_subparsers.add_parser('show', help='Show user profile')
-    show_parser.add_argument('--user-id', required=True, help='User ID')
-
-    # List profiles
-    list_parser = profiles_subparsers.add_parser('list', help='List user profiles')
-    list_parser.add_argument('--limit', type=int, default=10, help='Number of profiles to show')
-    list_parser.add_argument('--sort-by', choices=['risk', 'activity', 'recent'],
-                            default='risk', help='Sort criteria')
-
-    return profiles_parser
 
 
 def handle_train(args):
@@ -286,12 +266,16 @@ def handle_evaluate(args):
 
     # Load data
     if not args.data:
-        logger.error("No data file specified for evaluation")
-        sys.exit(1)
+        # Use default evaluation data path
+        paths = load_paths()
+        data_path = os.path.join(get_project_root(), paths.get('data', {}).get('evaluation', 'data/evaluation/default_eval.csv'))
+        logger.info(f"Using default evaluation data: {data_path}")
+    else:
+        data_path = args.data
 
     try:
-        df = load_transaction_batch(args.data)
-        logger.info(f"Loaded evaluation data from {args.data} with {len(df)} records")
+        df = load_transaction_batch(data_path)
+        logger.info(f"Loaded evaluation data from {data_path} with {len(df)} records")
     except Exception as e:
         logger.error(f"Failed to load evaluation data: {str(e)}")
         sys.exit(1)
@@ -476,103 +460,8 @@ def handle_setup(args):
         from datetime import datetime
         from infrastructure.config import load_paths, get_project_root
 
-        # Create user profiles database
+        # Load paths
         paths = load_paths()
-        user_profiles_db_path = os.path.join(
-            get_project_root(),
-            paths['shared']['user_profiles']
-        )
-
-        # Ensure directory exists
-        os.makedirs(os.path.dirname(user_profiles_db_path), exist_ok=True)
-
-        # Create user profiles database
-        conn = sqlite3.connect(user_profiles_db_path)
-        cursor = conn.cursor()
-
-        # Create tables
-        cursor.execute('''
-        CREATE TABLE IF NOT EXISTS user_profiles (
-            user_id TEXT PRIMARY KEY,
-            avg_amount REAL DEFAULT 0,
-            max_amount REAL DEFAULT 0,
-            avg_daily_transactions REAL DEFAULT 0,
-            avg_transaction_interval REAL DEFAULT 0,
-            typical_merchants TEXT,
-            last_countries TEXT,
-            avg_distance_from_home REAL DEFAULT 0,
-            avg_distance_from_last_transaction REAL DEFAULT 0,
-            median_purchase_price REAL DEFAULT 0,
-            pct_repeat_retailer REAL DEFAULT 0,
-            pct_used_chip REAL DEFAULT 0,
-            pct_used_pin REAL DEFAULT 0,
-            pct_online_orders REAL DEFAULT 0,
-            risk_score REAL DEFAULT 0,
-            account_age_days INTEGER DEFAULT 0,
-            last_transaction_date TEXT,
-            created_at TEXT DEFAULT CURRENT_TIMESTAMP,
-            updated_at TEXT DEFAULT CURRENT_TIMESTAMP
-        )
-        ''')
-
-        cursor.execute('''
-        CREATE TABLE IF NOT EXISTS user_transactions (
-            transaction_id TEXT PRIMARY KEY,
-            user_id TEXT NOT NULL,
-            amount REAL NOT NULL,
-            merchant TEXT,
-            merchant_category TEXT,
-            country TEXT,
-            timestamp TEXT NOT NULL,
-            distance_from_home REAL DEFAULT 0,
-            distance_from_last_transaction REAL DEFAULT 0,
-            ratio_to_median_purchase_price REAL DEFAULT 1.0,
-            repeat_retailer INTEGER DEFAULT 0,
-            used_chip INTEGER DEFAULT 0,
-            used_pin_number INTEGER DEFAULT 0,
-            online_order INTEGER DEFAULT 0,
-            is_fraud INTEGER DEFAULT 0,
-            FOREIGN KEY (user_id) REFERENCES user_profiles(user_id)
-        )
-        ''')
-
-        cursor.execute('''
-        CREATE TABLE IF NOT EXISTS user_velocity (
-            user_id TEXT NOT NULL,
-            time_window TEXT NOT NULL,
-            transaction_count INTEGER DEFAULT 0,
-            total_amount REAL DEFAULT 0,
-            unique_merchants INTEGER DEFAULT 0,
-            unique_countries INTEGER DEFAULT 0,
-            last_updated TEXT DEFAULT CURRENT_TIMESTAMP,
-            PRIMARY KEY (user_id, time_window),
-            FOREIGN KEY (user_id) REFERENCES user_profiles(user_id)
-        )
-        ''')
-
-        cursor.execute('''
-        CREATE TABLE IF NOT EXISTS user_patterns (
-            pattern_id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id TEXT NOT NULL,
-            pattern_type TEXT NOT NULL,
-            pattern_value TEXT NOT NULL,
-            confidence REAL DEFAULT 0,
-            last_matched TEXT,
-            created_at TEXT DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (user_id) REFERENCES user_profiles(user_id)
-        )
-        ''')
-
-        # Create indices
-        cursor.execute('CREATE INDEX IF NOT EXISTS idx_transactions_user_id ON user_transactions(user_id)')
-        cursor.execute('CREATE INDEX IF NOT EXISTS idx_transactions_timestamp ON user_transactions(timestamp)')
-        cursor.execute('CREATE INDEX IF NOT EXISTS idx_velocity_user_id ON user_velocity(user_id)')
-
-        # Commit changes and close connection
-        conn.commit()
-        conn.close()
-
-        logger.info(f"Created user profiles database at {user_profiles_db_path}")
 
         # Create dynamic rules database
         dynamic_rules_db_path = os.path.join(
@@ -677,6 +566,83 @@ def handle_setup(args):
 
             logger.info(f"Created recent frauds file at {recent_frauds_path}")
 
+    # Process raw data if requested
+    if args.process_data:
+        logger.info("Processing raw data into processed format...")
+        from infrastructure.utils.data_loader import process_raw_data
+
+        try:
+            processed_df = process_raw_data(save=True)
+            logger.info(f"Successfully processed raw data with shape {processed_df.shape}")
+
+            # Check if processed directory exists
+            processed_path = os.path.join(
+                get_project_root(),
+                paths['data']['processed']
+            )
+
+            if os.path.exists(processed_path):
+                logger.info(f"Processed data saved to {processed_path}")
+            else:
+                logger.warning(f"Failed to save processed data to {processed_path}")
+
+        except Exception as e:
+            logger.error(f"Error processing raw data: {str(e)}")
+            logger.error("System initialization completed with errors")
+            return
+
+    # Add default dynamic rules
+    try:
+        # Import the update_rules function
+        from pipelines.training_pipeline import update_rules
+
+        # Check if a trained model exists
+        import os
+        from infrastructure.config import get_project_root, load_paths
+
+        model_path = os.path.join(
+            get_project_root(),
+            paths['models']['classifier']['path']
+        )
+
+        if os.path.exists(model_path):
+            # If a model exists, use it to generate rules
+            logger.info("Generating dynamic rules from existing model...")
+            update_rules()
+        else:
+            # If no model exists, add default core feature rules
+            logger.info("No trained model found. Adding default core feature rules...")
+
+            # Add default rules for core features
+            core_features = {
+                'distance_from_home': {'operator': '>', 'threshold': 100.0, 'type': 'distance'},
+                'distance_from_last_transaction': {'operator': '>', 'threshold': 50.0, 'type': 'distance'},
+                'ratio_to_median_purchase_price': {'operator': '>', 'threshold': 3.0, 'type': 'transaction_pattern'},
+                'repeat_retailer': {'operator': '==', 'threshold': 0.0, 'type': 'transaction_pattern'},
+                'used_chip': {'operator': '==', 'threshold': 0.0, 'type': 'payment_method'},
+                'used_pin_number': {'operator': '==', 'threshold': 0.0, 'type': 'payment_method'},
+                'online_order': {'operator': '==', 'threshold': 1.0, 'type': 'payment_method'}
+            }
+
+            # Add core feature rules
+            rules_added = 0
+            for feature, rule_info in core_features.items():
+                rule_name = f"core_{feature}"
+                success = rule_manager.add_rule(
+                    name=rule_name,
+                    rule_type=rule_info['type'],
+                    feature=feature,
+                    operator=rule_info['operator'],
+                    threshold=rule_info['threshold'],
+                    confidence=0.9  # High confidence for core rules
+                )
+                if success:
+                    rules_added += 1
+
+            logger.info(f"Added {rules_added} default core feature rules to the database")
+    except Exception as e:
+        logger.error(f"Error adding dynamic rules: {str(e)}")
+
     logger.info("System initialization completed")
 
 
@@ -760,33 +726,6 @@ def handle_thresholds(args):
             logger.info(f"Thresholds manually adjusted: {adjuster.thresholds}")
 
 
-def handle_profiles(args):
-    """Handle the profiles command"""
-    if not hasattr(args, 'profiles_command') or args.profiles_command is None:
-        logger.error("No profiles command specified")
-        sys.exit(1)
-
-    if args.profiles_command == 'show':
-        # Show user profile
-        profile = context_manager.get_user_profile(args.user_id)
-        if profile:
-            print(f"=== Profile for User {args.user_id} ===")
-            print(json.dumps(profile, indent=2))
-        else:
-            print(f"No profile found for user {args.user_id}")
-
-    elif args.profiles_command == 'list':
-        # List profiles
-        profiles = context_manager.list_user_profiles(
-            limit=args.limit,
-            sort_by=args.sort_by
-        )
-        print(f"=== User Profiles (sorted by {args.sort_by}) ===")
-        for profile in profiles:
-            print(f"User: {profile['user_id']}, Risk: {profile['risk_score']:.2f}, "
-                  f"Avg Amount: {profile['avg_amount']:.2f}")
-
-
 def main():
     """Main entry point"""
     # Create the top-level parser
@@ -807,7 +746,6 @@ def main():
     setup_setup_parser(subparsers)
     setup_rules_parser(subparsers)
     setup_thresholds_parser(subparsers)
-    setup_profiles_parser(subparsers)
 
     # Parse arguments
     args = parser.parse_args()
@@ -831,8 +769,6 @@ def main():
         handle_rules(args)
     elif args.command == 'thresholds':
         handle_thresholds(args)
-    elif args.command == 'profiles':
-        handle_profiles(args)
     else:
         parser.print_help()
         sys.exit(1)

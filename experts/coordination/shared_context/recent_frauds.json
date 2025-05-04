@@ -715,6 +715,38 @@
       "anomaly_score": -0.5,
       "rule_violations": 4,
       "timestamp": "2025-04-30T00:45:57.091568"
+    },
+    {
+      "transaction_features": {
+        "distance_from_home": 57.87,
+        "distance_from_last_transaction": 0.31,
+        "ratio_to_median_purchase_price": 1.95,
+        "repeat_retailer": 1,
+        "used_chip": 1,
+        "used_pin_number": 1,
+        "online_order": 0
+      },
+      "classifier_insights": 0,
+      "anomaly_insights": {
+        "score": 0.0,
+        "cluster_deviation": 0.0
+      },
+      "timestamp": "2025-05-05T04:26:25.682288"
+    },
+    {
+      "transaction_features": {
+        "distance_from_home": 57.87,
+        "distance_from_last_transaction": 0.31,
+        "ratio_to_median_purchase_price": 1.95,
+        "repeat_retailer": 1,
+        "used_chip": 1,
+        "used_pin_number": 1,
+        "online_order": 0
+      },
+      "classifier_score": 1.0,
+      "anomaly_score": 0.0,
+      "rule_violations": 0,
+      "timestamp": "2025-05-05T04:26:25.690287"
     }
   ],
   "fraud_patterns": [

@@ -1,44 +1,15 @@
 {
-  "amount_rules": {
-    "high_value_threshold": 5000,
-    "unusual_amount_multiplier": 3
-  },
-  "velocity_rules": {
-    "max_transactions_per_hour": 5,
-    "max_transactions_per_day": 20,
-    "max_amount_per_day": 10000
-  },
-  "location_rules": {
-    "suspicious_countries": [
-      "XX",
-      "YY",
-      "ZZ"
-    ],
-    "unusual_location_change_hours": 24,
+  "distance_rules": {
     "high_distance_from_home": 100,
     "high_distance_from_last_transaction": 50
   },
-  "time_rules": {
-    "unusual_hour_start": 1,
-    "unusual_hour_end": 5
-  },
-  "merchant_rules": {
-    "high_risk_merchant_categories": [
-      "gambling",
-      "digital_goods",
-      "money_transfer"
-    ]
-  },
-  "transaction_rules": {
+  "transaction_pattern_rules": {
     "high_ratio_to_median_threshold": 3.0,
-    "suspicious_payment_methods": {
-      "no_chip": true,
-      "no_pin": true,
-      "online_order": true
-    }
+    "new_retailer_flag": true
   },
-  "user_profile_rules": {
-    "new_account_days": 30,
-    "inactive_account_days": 180
+  "payment_method_rules": {
+    "no_chip": true,
+    "no_pin": true,
+    "online_order": true
   }
 }

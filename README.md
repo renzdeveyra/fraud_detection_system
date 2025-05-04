@@ -1,6 +1,6 @@
-# Fraud Detection System
+# Transaction-Based Fraud Detection System
 
-A comprehensive credit card fraud detection system that combines supervised learning, anomaly detection, and rule-based approaches.
+A streamlined credit card fraud detection system that combines supervised learning, anomaly detection, and rule-based approaches, focusing exclusively on transaction-based features.
 
 ## Architecture
 
@@ -12,15 +12,31 @@ The system is built around two main expert components that work together:
 
 3. **Expert Mediator**: A coordination component that combines the outputs from both experts to make a final decision about each transaction.
 
+## Core Dataset Features
+
+The system focuses exclusively on these transaction-based features:
+
+- `distance_from_home` - Distance from home where the transaction happened
+- `distance_from_last_transaction` - Distance from last transaction
+- `ratio_to_median_purchase_price` - Ratio of purchase price to median purchase price
+- `repeat_retailer` - Whether the transaction is with a repeat retailer (0/1)
+- `used_chip` - Whether chip was used (0/1)
+- `used_pin_number` - Whether PIN was used (0/1)
+- `online_order` - Whether it was an online order (0/1)
+
+These features provide a comprehensive view of transaction patterns without relying on user profile information.
+
 ## Installation
 
 1. Clone the repository:
+
    ```
    git clone <repository-url>
    cd fraud_detection_system
    ```
 
 2. Install dependencies:
+
    ```
    pip install -r requirements.txt
    ```
@@ -42,6 +58,7 @@ python main.py train [options]
 ```
 
 Options:
+
 - `--data PATH`: Path to data file (CSV)
 - `--test-size SIZE`: Test split size (default: 0.2)
 - `--contamination RATE`: Anomaly contamination rate (default: 0.01)
@@ -58,6 +75,7 @@ python main.py infer [options]
 ```
 
 Options:
+
 - `--input FILE`: Input file with transactions
 - `--output FILE`: Output file for results
 - `--stream SOURCE`: Stream source for real-time processing
@@ -72,6 +90,7 @@ python main.py evaluate [options]
 ```
 
 Options:
+
 - `--data PATH`: Path to evaluation data file (CSV)
 - `--model TYPE`: Model to evaluate (classifier, anomaly, or both)
 
@@ -84,6 +103,7 @@ python main.py config [options]
 ```
 
 Options:
+
 - `--show`: Show current configuration
 - `--update KEY=VALUE`: Update configuration parameter
 

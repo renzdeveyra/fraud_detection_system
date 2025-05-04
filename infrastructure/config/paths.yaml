@@ -1,23 +1,36 @@
 # File paths configuration
 
 data:
-  raw: "data/raw/creditcard.csv"
+  # Original source data
+  source: "data/source/creditcard.csv"
+
+  # Data ready for training/inference after preprocessing
   processed: "data/processed/transactions_processed.parquet"
+
+  # Data splits for model development
+  training: "data/splits/training/"
+  validation: "data/splits/validation/"
+  testing: "data/splits/testing/"
+
+  # Example transactions for demos and quick tests
+  examples: "data/examples/"
+
+  # Production inference data
+  inference: "data/inference/"
 
 models:
   classifier:
     path: "experts/fraud_classifier/models/classifier_model.pkl"
     rules: "experts/fraud_classifier/rules/static_rules.json"
     dynamic: "experts/fraud_classifier/rules/dynamic_rules.db"
-  
+
   anomaly:
     path: "experts/anomaly_detector/models/isolation_forest.pkl"
     thresholds: "experts/anomaly_detector/thresholds/base_thresholds.yaml"
 
 shared:
   fraud_history: "experts/coordination/shared_context/recent_frauds.json"
-  user_profiles: "experts/coordination/shared_context/user_profiles.db"
-  
+
 logs:
   dir: "logs/"
   main: "logs/fraud_detection.log"

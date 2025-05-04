@@ -144,16 +144,38 @@ def check_transaction_context(transaction: Dict[str, Any]) -> Dict[str, Any]:
         'matches_recent_fraud': False
     }
 
+    # Load rules to get thresholds
+    import json
+    import os
+    from infrastructure.config import get_project_root, load_paths
+
+    paths = load_paths()
+    rules_path = os.path.join(
+        get_project_root(),
+        paths.get('models', {}).get('classifier', {}).get('rules', 'experts/fraud_classifier/rules/static_rules.json')
+    )
+
+    try:
+        with open(rules_path, 'r') as f:
+            rules = json.load(f)
+    except Exception as e:
+        logger.warning(f"Error loading rules: {str(e)}")
+        rules = {}
+
+    # Get thresholds from rules
+    distance_rules = rules.get('distance_rules', {})
+    transaction_pattern_rules = rules.get('transaction_pattern_rules', {})
+
     # Check unusual distances
     if 'distance_from_home' in transaction:
-        context['distance_from_home_unusual'] = transaction['distance_from_home'] > 100
+        context['distance_from_home_unusual'] = transaction['distance_from_home'] > distance_rules.get('high_distance_from_home', 100)
 
     if 'distance_from_last_transaction' in transaction:
-        context['distance_from_last_transaction_unusual'] = transaction['distance_from_last_transaction'] > 50
+        context['distance_from_last_transaction_unusual'] = transaction['distance_from_last_transaction'] > distance_rules.get('high_distance_from_last_transaction', 50)
 
     # Check unusual purchase price ratio
     if 'ratio_to_median_purchase_price' in transaction:
-        context['purchase_price_ratio_unusual'] = transaction['ratio_to_median_purchase_price'] > 3.0
+        context['purchase_price_ratio_unusual'] = transaction['ratio_to_median_purchase_price'] > transaction_pattern_rules.get('high_ratio_to_median_threshold', 3.0)
 
     # Check if this is a new retailer
     if 'repeat_retailer' in transaction:
@@ -161,14 +183,15 @@ def check_transaction_context(transaction: Dict[str, Any]) -> Dict[str, Any]:
 
     # Check unusual payment methods
     payment_method_unusual = False
+    payment_method_rules = rules.get('payment_method_rules', {})
 
-    if 'used_chip' in transaction and transaction['used_chip'] == 0:
+    if payment_method_rules.get('no_chip', True) and 'used_chip' in transaction and transaction['used_chip'] == 0:
         payment_method_unusual = True
 
-    if 'used_pin_number' in transaction and transaction['used_pin_number'] == 0:
+    if payment_method_rules.get('no_pin', True) and 'used_pin_number' in transaction and transaction['used_pin_number'] == 0:
         payment_method_unusual = True
 
-    if 'online_order' in transaction and transaction['online_order'] == 1:
+    if payment_method_rules.get('online_order', True) and 'online_order' in transaction and transaction['online_order'] == 1:
         payment_method_unusual = True
 
     context['payment_method_unusual'] = payment_method_unusual

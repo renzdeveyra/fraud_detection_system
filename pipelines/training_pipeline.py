@@ -124,24 +124,101 @@ def train_anomaly_detector(data_file=None, contamination=0.01, save=True):
 
 @log_execution_time
 def update_rules():
-    """Update static rules based on model insights"""
-    logger.info("Updating static rules")
+    """Update static and dynamic rules based on model insights"""
+    logger.info("Updating rules based on model insights")
 
-    # Load current rules
+    # Load current static rules
     current_rules = load_rules('static')
 
     # Load thresholds
     thresholds = load_rules('thresholds')
 
-    # Update rules based on model insights
-    # This is a placeholder - in a real system, you would analyze
-    # model coefficients or feature importance to update rules
-
-    # Save updated rules
+    # Save updated static rules
     save_rules(current_rules, 'static')
     save_rules(thresholds, 'thresholds')
 
-    logger.info("Rules updated successfully")
+    # Generate and add dynamic rules from the trained model
+    try:
+        # Import necessary modules
+        import pickle
+        import os
+        from infrastructure.config import get_project_root, load_paths
+        from experts.fraud_classifier.rules.rule_manager import generate_rules_from_model, add_rule
+        from infrastructure.utils.model_ops import load_model
+        from experts.fraud_classifier.train import FraudClassifierTrainer
+
+        # Load the trained classifier model
+        classifier = load_model('classifier')
+        logger.info("Loaded classifier model for rule generation")
+
+        # Initialize trainer to get feature names
+        trainer = FraudClassifierTrainer()
+
+        # Get feature names from the model if available
+        if hasattr(classifier, 'feature_names_in_'):
+            feature_names = classifier.feature_names_in_
+        else:
+            # Use default core features with transformations
+            feature_names = (
+                trainer.numeric_features +
+                ['log_distance_from_home', 'log_distance_from_last_transaction'] +
+                trainer.binary_features
+            )
+            logger.warning("Model doesn't have feature_names_in_ attribute, using default features")
+
+        # Generate rules from the model
+        generated_rules = generate_rules_from_model(classifier, feature_names, threshold=0.3)
+        logger.info(f"Generated {len(generated_rules)} dynamic rules from model")
+
+        # Add each rule to the database
+        rules_added = 0
+        for rule in generated_rules:
+            success = add_rule(
+                name=rule['rule_name'],
+                rule_type=rule['rule_type'],
+                feature=rule['feature'],
+                operator=rule['operator'],
+                threshold=rule['threshold'],
+                confidence=rule['confidence']
+            )
+            if success:
+                rules_added += 1
+
+        # Log results
+        logger.info(f"Successfully added {rules_added} dynamic rules to the database")
+
+        # Also generate rules for core features based on domain knowledge
+        core_features = {
+            'distance_from_home': {'operator': '>', 'threshold': 100.0, 'type': 'distance'},
+            'distance_from_last_transaction': {'operator': '>', 'threshold': 50.0, 'type': 'distance'},
+            'ratio_to_median_purchase_price': {'operator': '>', 'threshold': 3.0, 'type': 'transaction_pattern'},
+            'repeat_retailer': {'operator': '==', 'threshold': 0.0, 'type': 'transaction_pattern'},
+            'used_chip': {'operator': '==', 'threshold': 0.0, 'type': 'payment_method'},
+            'used_pin_number': {'operator': '==', 'threshold': 0.0, 'type': 'payment_method'},
+            'online_order': {'operator': '==', 'threshold': 1.0, 'type': 'payment_method'}
+        }
+
+        # Add core feature rules
+        core_rules_added = 0
+        for feature, rule_info in core_features.items():
+            rule_name = f"core_{feature}"
+            success = add_rule(
+                name=rule_name,
+                rule_type=rule_info['type'],
+                feature=feature,
+                operator=rule_info['operator'],
+                threshold=rule_info['threshold'],
+                confidence=0.9  # High confidence for core rules
+            )
+            if success:
+                core_rules_added += 1
+
+        logger.info(f"Added {core_rules_added} core feature rules to the database")
+
+    except Exception as e:
+        logger.error(f"Error generating dynamic rules: {str(e)}")
+
+    logger.info("Rules update completed successfully")
 
 def main():
     """Main training pipeline entry point"""

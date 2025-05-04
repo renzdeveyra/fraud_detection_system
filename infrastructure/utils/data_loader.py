@@ -7,7 +7,7 @@ from infrastructure.config import load_paths, get_project_root
 def load_raw_data() -> pd.DataFrame:
     """Load the original credit card fraud dataset"""
     paths = load_paths()
-    data_path = os.path.join(get_project_root(), paths['data']['raw'])
+    data_path = os.path.join(get_project_root(), paths['data']['source'])
 
     return pd.read_csv(data_path)
 

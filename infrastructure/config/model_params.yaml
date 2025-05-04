@@ -10,13 +10,16 @@ classifier:
 
   rules:
     # Rules based on core dataset features
-    distance_from_home_threshold: 100
-    distance_from_last_transaction_threshold: 50
-    ratio_to_median_purchase_price_threshold: 3.0
+    distance_rules:
+      high_distance_from_home: 100
+      high_distance_from_last_transaction: 50
+    transaction_pattern_rules:
+      high_ratio_to_median_threshold: 3.0
+      new_retailer_flag: true
     payment_method_rules:
-      no_chip_no_pin: true
-      online_order_flag: true
-    new_retailer_flag: true
+      no_chip: true
+      no_pin: true
+      online_order: true
 
 anomaly:
   model_type: "IsolationForest"
@@ -34,23 +37,28 @@ anomaly:
     adjustment_rate: 0.1
 
   feature_importance:
-    distance_features_weight: 0.4
-    payment_method_weight: 0.4
-    purchase_pattern_weight: 0.2
+    # Weights for core dataset features
+    distance_from_home_weight: 0.2
+    distance_from_last_transaction_weight: 0.2
+    ratio_to_median_purchase_price_weight: 0.2
+    repeat_retailer_weight: 0.1
+    used_chip_weight: 0.1
+    used_pin_number_weight: 0.1
+    online_order_weight: 0.1
 
 mediator:
   # Adjusted weights based on model evaluation
-  classifier_weight: 0.8  # Increased due to better performance
-  anomaly_weight: 0.2     # Decreased due to lower performance
+  classifier_weight: 0.8 # Increased due to better performance
+  anomaly_weight: 0.2 # Decreased due to lower performance
   confidence_threshold: 0.9
   block_threshold: 0.8
   review_threshold: 0.5
 
   # Core feature importance in decision making
   feature_weights:
-    distance_features: 0.3
-    payment_method: 0.4
-    purchase_pattern: 0.3
+    distance_features: 0.4 # distance_from_home, distance_from_last_transaction
+    payment_method: 0.3 # used_chip, used_pin_number, online_order
+    purchase_pattern: 0.3 # ratio_to_median_purchase_price, repeat_retailer
 
 memory:
   context_buffer_size: 1000
